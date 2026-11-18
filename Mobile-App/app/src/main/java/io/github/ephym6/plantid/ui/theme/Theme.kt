@@ -1,4 +1,4 @@
-package com.example.plantid.ui.theme
+package io.github.ephym6.plantid.ui.theme
 
 import android.app.Activity
 import android.os.Build
