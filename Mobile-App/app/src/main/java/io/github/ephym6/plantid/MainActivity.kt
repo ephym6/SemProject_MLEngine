@@ -1,4 +1,4 @@
-package com.example.plantid
+package io.github.ephym6.plantid
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,7 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.plantid.ui.theme.PlantIDTheme
+import io.github.ephym6.plantid.ui.theme.PlantIDTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

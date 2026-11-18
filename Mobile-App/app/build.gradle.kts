@@ -4,14 +4,14 @@ plugins {
 }
 
 android {
-    namespace = "com.example.plantid"
+    namespace = "io.github.ephym6.plantid"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "com.example.plantid"
-        minSdk = 24
+        applicationId = "io.github.ephym6.plantid"
+        minSdk = 26
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
