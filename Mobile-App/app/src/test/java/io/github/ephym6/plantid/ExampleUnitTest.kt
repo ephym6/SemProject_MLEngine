@@ -1,4 +1,4 @@
-package com.example.plantid
+package io.github.ephym6.plantid
 
 import org.junit.Test
 
