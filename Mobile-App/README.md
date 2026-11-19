@@ -5,10 +5,10 @@ plant, see the identification result, read its care guide, and revisit past
 identifications. All processing is meant to happen on the device, and the app
 does not need an account.
 
-> **Current status: Sprint 1 (design system and navigation).** The app has its
-> theme (light/dark), shared UI components, and a bottom-navigation shell with
-> placeholder Home, History and About screens. There's no photo selection, no
-> identification (mock or real) and no saved history yet.
+> **Current status: Sprint 2 (photo selection).** You can take a photo with the
+> camera or choose one with the photo picker, then check it on a preview screen.
+> **Identification is not connected yet** (mock identification arrives in
+> Sprint 3; the real model in Sprint 7), and there's no saved history yet.
 
 ## Requirements
 
@@ -52,18 +52,29 @@ The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
 Single `app` module. Current packages under `io.github.ephym6.plantid`:
 
 ```
+PlantIdApplication.kt      # owns the AppContainer
 MainActivity.kt            # sets the theme and PlantIdApp
+di/AppContainer.kt         # manual dependency container
+data/image/                # PhotoStore: private copy of the selected photo
 ui/
-├── PlantIdApp.kt          # app shell: bottom bar + navigation host
-├── navigation/            # type-safe routes, NavHost, tab navigation helper
+├── PlantIdApp.kt          # app shell: bottom bar, navigation host, photo selection
+├── navigation/            # type-safe routes, NavHost, navigation helpers
 ├── theme/                 # colours, typography, shapes, Spacing/Sizes tokens
 ├── components/            # buttons, cards, status message, loading/empty/error states, branding
+├── identify/              # photo source sheet, picker/camera handling, photo preview
 ├── home/  history/  about/   # one package per screen
 ```
 
 Planned additions: `domain/` (Plant, CareInfo, IdentificationOutcome,
-IdentificationService), `data/` (plant content, local history, mock
-identification) and `di/` (manual dependency container).
+IdentificationService) and more of `data/` (plant content, local history,
+mock identification).
+
+### Photos and permissions
+
+PlantID requests **no runtime permissions**. Photos come from the Android
+Photo Picker (access to the chosen photo only) or the system camera app, which
+writes into PlantID's cache through a FileProvider. The newest photo is kept as
+a temporary private copy; nothing is uploaded. See `docs/DECISIONS.md` D12.
 
 ### UI conventions
 
@@ -83,3 +94,5 @@ They are not real predictions.
 
 - [`docs/DECISIONS.md`](docs/DECISIONS.md): technical and product decisions, and
   open questions with owners.
+- [`docs/MANUAL_TESTS.md`](docs/MANUAL_TESTS.md): on-device checks for flows
+  automated tests can't drive (photo picker, camera).
