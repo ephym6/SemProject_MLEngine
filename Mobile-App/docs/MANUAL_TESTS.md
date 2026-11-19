@@ -21,7 +21,7 @@ Device: ____________  Android: ____  Build/commit: ________  Tester: ____  Date:
 | 2.8 | Check permissions: Settings → Apps → PlantID → Permissions | No permissions requested or listed; no permission prompt ever appeared | |
 | 2.9 | On preview, **Choose another photo** → pick a different photo | Preview now shows the new photo; Back goes to where you started, not the old preview | |
 | 2.10 | On preview, **Choose another photo** → cancel | The original photo is still shown | |
-| 2.11 | On preview | **Identify plant** is disabled; the note says identification comes next | |
+| 2.11 | On preview | **Identify plant** becomes enabled once the photo has loaded (disabled if the photo can't be shown) | |
 | 2.12 | Preview → top-bar Back and system Back | Both return to the starting screen; bottom bar visible again | |
 | 2.13 | Rotate the device on the preview (if rotation is on) | Same photo still shown | |
 | 2.14 | Pick a non-image or damaged file if your picker allows it, or a HEIC photo on Android 8/9 | "Can't open this photo" dialog; OK returns you safely | |
@@ -39,7 +39,7 @@ model results.
 | # | Steps | Expected | Result |
 |---|---|---|---|
 | 3.1 | Choose a photo → preview | **Demo mode** card lists 6 outcomes; *Plant identified* selected by default; **Identify plant** enabled once the photo shows | |
-| 3.2 | Demo *Plant identified* → **Identify plant** | "Analyzing your plant…" with the photo, then result: **Demo result** banner, photo + "Demo Plant A" in one card, *Match found*, *About this plant* | |
+| 3.2 | Demo *Plant identified* → **Identify plant** | "Analyzing your plant…" with the photo, then result: **Demo result** banner, photo + "Golden Pothos" in one card, *Match found* | |
 | 3.3 | Demo *Identified, some details missing* | "Demo Plant B", no scientific name, no *About this plant*, layout intact | |
 | 3.4 | Demo *Not confident* | Warning banner "We couldn't confidently identify this plant", **no plant name**, *Try another photo* | |
 | 3.5 | Demo *No supported plant* | "No supported plant found", **no plant name**, looks different from 3.4 | |
@@ -72,3 +72,28 @@ Identification results are still **demo** output.
 | 4.8 | Airplane mode, repeat 4.2 | Care guide still loads (offline) | |
 | 4.9 | Dark mode + large font on the care guide | Readable, nothing clipped, page scrolls | |
 | 4.10 | TalkBack on the care guide | Section titles are read as headings; values and notes are read | |
+
+## Sprint 5 — Saving and history
+
+Device: ____________  Android: ____  Build/commit: ________  Tester: ____  Date: ________
+
+Device tests (`connectedDebugAndroidTest`) **clear the debug app's history**.
+Run them before these checks, not after.
+
+| # | Steps | Expected | Result |
+|---|---|---|---|
+| 5.1 | Fresh install (or Clear history) → Home | No "Recent identifications" section; no empty box | |
+| 5.2 | Identify (demo *Plant identified*) → **Save to history** | Button turns into "Saved to history" confirmation | |
+| 5.3 | Tap Save again / rotate after saving | Still saved; no second record appears in History | |
+| 5.4 | **Back to home** | "Recent identifications" shows the record (thumbnail, Golden Pothos, Identified, date/time, Demo tag) | |
+| 5.5 | Save results for *Not confident* and *No supported plant* | Listed as "Unidentified plant" with *Not confident* / *No supported plant* labels (icon + text) | |
+| 5.6 | *Something goes wrong* result | No Save option | |
+| 5.7 | Force-stop PlantID (Settings → Apps) and reopen | History and Home's recent section still show the saved records | |
+| 5.8 | Open a saved identified record | Same photo, name and status as when identified; "Identified on …"; Demo banner; **View care guide** opens the guide and Back returns to the record | |
+| 5.9 | Open a saved *Not confident* record | No plant name, no care guide button | |
+| 5.10 | **Delete from history** → Cancel, then → Delete | Cancel keeps it; Delete returns to the previous screen and the record is gone everywhere | |
+| 5.11 | History → **Clear history** (top bar) → Cancel, then → Clear all | Confirmation states how many records; Clear all empties History and Home's section | |
+| 5.12 | After clearing, About and a care guide | Supported plants and care guides still there (bundled data not affected) | |
+| 5.13 | History with 10+ records | Scrolls smoothly; newest first | |
+| 5.14 | Settings → Google → Backup (if available) | PlantID isn't backed up (or backs up no data) | |
+| 5.15 | Dark mode + large font + TalkBack on History and a saved record | Readable, nothing clipped; rows read name, status and date | |
