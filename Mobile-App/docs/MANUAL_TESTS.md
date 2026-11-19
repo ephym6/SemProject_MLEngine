@@ -28,3 +28,28 @@ Device: ____________  Android: ____  Build/commit: ________  Tester: ____  Date:
 | 2.15 | Camera taken, then background PlantID for a while (or enable Developer options → *Don't keep activities*), then repeat 2.6 | Photo still reaches the preview after returning from the camera | |
 | 2.16 | Dark mode and large font size (Settings → Display) | Sheet, dialogs and preview readable, nothing clipped, page scrolls | |
 | 2.17 | Gallery after taking a photo in PlantID | The photo is **not** added to the gallery | |
+
+## Sprint 3 — Mock identification flow
+
+Device: ____________  Android: ____  Build/commit: ________  Tester: ____  Date: ________
+
+All outcomes here come from the **demo** identifier. Do not record them as
+model results.
+
+| # | Steps | Expected | Result |
+|---|---|---|---|
+| 3.1 | Choose a photo → preview | **Demo mode** card lists 6 outcomes; *Plant identified* selected by default; **Identify plant** enabled once the photo shows | |
+| 3.2 | Demo *Plant identified* → **Identify plant** | "Analyzing your plant…" with the photo, then result: **Demo result** banner, photo + "Demo Plant A" in one card, *Match found*, *About this plant* | |
+| 3.3 | Demo *Identified, some details missing* | "Demo Plant B", no scientific name, no *About this plant*, layout intact | |
+| 3.4 | Demo *Not confident* | Warning banner "We couldn't confidently identify this plant", **no plant name**, *Try another photo* | |
+| 3.5 | Demo *No supported plant* | "No supported plant found", **no plant name**, looks different from 3.4 | |
+| 3.6 | Demo *Something goes wrong* → **Try again** | Error panel with Try again and Back to home; Try again shows Analyzing, then the error again (the demo outcome is still *Something goes wrong*) | |
+| 3.7 | Demo *Plant identified (slow)* | Loading lasts about 6 s, no fake percentage, then the result | |
+| 3.8 | Tap **Identify plant** several times quickly | Only one Analyzing screen; Back returns to the preview once | |
+| 3.9 | During Analyzing, press Back | Returns to preview, no result appears later | |
+| 3.10 | Result → **Identify another plant** / **Try another photo** → pick a photo | New preview; Back goes to where you started, not the old result | |
+| 3.11 | Result → **Back to home** (also when started from History) | Home tab, bottom bar visible | |
+| 3.12 | Result → top-bar Back | Returns to the preview with the same photo | |
+| 3.13 | Rotate during Analyzing and on the result | Identification is not restarted; same result shown | |
+| 3.14 | TalkBack on the result | Banner, status and plant name are read; status isn't conveyed by colour only | |
+| 3.15 | Dark mode + large font on each result type | Readable, nothing clipped, page scrolls | |

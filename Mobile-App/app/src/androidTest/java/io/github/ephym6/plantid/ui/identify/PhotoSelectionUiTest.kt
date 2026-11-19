@@ -15,6 +15,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.ephym6.plantid.R
+import io.github.ephym6.plantid.data.identification.mock.DemoScenario
 import io.github.ephym6.plantid.ui.PlantIdApp
 import io.github.ephym6.plantid.ui.theme.PlantIDTheme
 import org.junit.Assert.assertEquals
@@ -74,7 +75,7 @@ class PhotoSelectionUiTest {
     }
 
     @Test
-    fun previewOffersChooseAnotherAndBackButIdentifyIsNotAvailableYet() {
+    fun previewWithoutAUsablePhotoOffersChooseAnotherAndBackButNotIdentify() {
         var chooseAnotherTaps = 0
         var backTaps = 0
         composeRule.setContent {
@@ -83,6 +84,7 @@ class PhotoSelectionUiTest {
                     photo = null,
                     onBack = { backTaps++ },
                     onChooseAnother = { chooseAnotherTaps++ },
+                    onIdentify = {},
                 )
             }
         }
@@ -99,10 +101,40 @@ class PhotoSelectionUiTest {
     @Test
     fun previewWithInvalidPhotoIdExplainsThePhotoIsUnavailable() {
         composeRule.setContent {
-            PlantIDTheme { PhotoPreviewScreen(photo = null, onBack = {}, onChooseAnother = {}) }
+            PlantIDTheme { PhotoPreviewScreen(photo = null, onBack = {}, onChooseAnother = {}, onIdentify = {}) }
         }
 
         composeRule.onNodeWithText(str(R.string.preview_image_error)).assertIsDisplayed()
+    }
+
+    @Test
+    fun demoModeCardSelectsTheMockOutcome() {
+        var selected: DemoScenario? = null
+        composeRule.setContent {
+            PlantIDTheme {
+                PhotoPreviewScreen(
+                    photo = null,
+                    onBack = {},
+                    onChooseAnother = {},
+                    onIdentify = {},
+                    demoScenario = DemoScenario.Identified,
+                    onDemoScenarioSelected = { selected = it },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText(str(R.string.demo_mode_title)).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText(str(R.string.demo_scenario_uncertain)).performScrollTo().performClick()
+        assertEquals(DemoScenario.Uncertain, selected)
+    }
+
+    @Test
+    fun demoModeCardIsHiddenWhenNoDemoIdentifierIsInUse() {
+        composeRule.setContent {
+            PlantIDTheme { PhotoPreviewScreen(photo = null, onBack = {}, onChooseAnother = {}, onIdentify = {}) }
+        }
+
+        composeRule.onNodeWithText(str(R.string.demo_mode_title)).assertDoesNotExist()
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -111,7 +143,7 @@ class PhotoSelectionUiTest {
         // e.g. the system cleared PlantID's cache while the preview was in the back stack.
         val missing = File(composeRule.activity.cacheDir, "selected_photos/picked_missing.img")
         composeRule.setContent {
-            PlantIDTheme { PhotoPreviewScreen(photo = missing, onBack = {}, onChooseAnother = {}) }
+            PlantIDTheme { PhotoPreviewScreen(photo = missing, onBack = {}, onChooseAnother = {}, onIdentify = {}) }
         }
 
         composeRule.waitUntilExactlyOneExists(hasText(str(R.string.preview_image_error)), timeoutMillis = 5_000)

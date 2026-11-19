@@ -5,10 +5,11 @@ plant, see the identification result, read its care guide, and revisit past
 identifications. All processing is meant to happen on the device, and the app
 does not need an account.
 
-> **Current status: Sprint 2 (photo selection).** You can take a photo with the
-> camera or choose one with the photo picker, then check it on a preview screen.
-> **Identification is not connected yet** (mock identification arrives in
-> Sprint 3; the real model in Sprint 7), and there's no saved history yet.
+> **Current status: Sprint 3 (mock identification).** You can take or choose a
+> photo, preview it and run a **demo** identification that shows each result
+> type: identified, uncertain, unsupported and error. All results come from a
+> clearly labelled mock: **no real model is connected** (Sprint 7). Care guide
+> (Sprint 4) and saved history (Sprint 5) are not built yet.
 
 ## Requirements
 
@@ -55,19 +56,20 @@ Single `app` module. Current packages under `io.github.ephym6.plantid`:
 PlantIdApplication.kt      # owns the AppContainer
 MainActivity.kt            # sets the theme and PlantIdApp
 di/AppContainer.kt         # manual dependency container
+domain/identification/     # IdentificationService contract and outcome types
 data/image/                # PhotoStore: private copy of the selected photo
+data/identification/mock/  # DEMO-only mock identifier, demo scenarios, fictional plants
 ui/
 ├── PlantIdApp.kt          # app shell: bottom bar, navigation host, photo selection
 ├── navigation/            # type-safe routes, NavHost, navigation helpers
 ├── theme/                 # colours, typography, shapes, Spacing/Sizes tokens
 ├── components/            # buttons, cards, status message, loading/empty/error states, branding
-├── identify/              # photo source sheet, picker/camera handling, photo preview
+├── identify/              # photo source sheet, preview, demo mode picker, identifying + result screens
 ├── home/  history/  about/   # one package per screen
 ```
 
-Planned additions: `domain/` (Plant, CareInfo, IdentificationOutcome,
-IdentificationService) and more of `data/` (plant content, local history,
-mock identification).
+Planned additions: plant and care content (Sprint 4), local history
+(Sprint 5), the real on-device identifier (Sprint 7).
 
 ### Photos and permissions
 
@@ -86,9 +88,19 @@ a temporary private copy; nothing is uploaded. See `docs/DECISIONS.md` D12.
 - Icons: Material Symbols Rounded as vector drawables in `res/drawable/ic_*.xml`.
 - Screens take state and callbacks only. They never receive the `NavController`.
 
-The UI only talks to an `IdentificationService` interface. Until the model is
-integrated, a **mock** implementation returns clearly labelled demo outcomes.
-They are not real predictions.
+### Mock identification (demo only)
+
+The UI only talks to the `IdentificationService` interface. Until the real
+model is integrated, `MockIdentificationService` is the only implementation:
+
+- It **does not analyse the photo** (it only checks the file exists) and
+  returns the outcome chosen in the preview's **Demo mode** card: identified,
+  identified with missing details, not confident, no supported plant, error,
+  or slow (about 6 s).
+- Its plants are **fictional** ("Demo Plant A"). It returns no scores and no
+  plant facts.
+- Every result it produces shows a **Demo result** banner. Never present these
+  results as real predictions or use them as model-accuracy data.
 
 ## Documentation
 
