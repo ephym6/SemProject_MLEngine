@@ -5,8 +5,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -50,18 +52,18 @@ fun PlantIdNavHost(
         startDestination = HomeRoute,
         modifier = modifier,
     ) {
-        composable<HomeRoute> {
+        composable<HomeRoute> { entry ->
             val viewModel: HomeViewModel = viewModel(factory = HomeViewModel.factory(container.historyRepository))
             val recent by viewModel.recent.collectAsStateWithLifecycle()
             HomeScreen(
                 recent = recent,
                 isDemo = container.demoScenarios != null,
                 onIdentifyPlant = onIdentifyPlant,
-                onOpenHistory = { navController.navigateToTopLevel(TopLevelDestination.History) },
-                onOpenRecord = { id -> navController.navigate(HistoryDetailRoute(id)) { launchSingleTop = true } },
+                onOpenHistory = { entry.ifResumed { navController.navigateToTopLevel(TopLevelDestination.History) } },
+                onOpenRecord = { id -> entry.ifResumed { navController.navigate(HistoryDetailRoute(id)) { launchSingleTop = true } } },
             )
         }
-        composable<HistoryRoute> {
+        composable<HistoryRoute> { entry ->
             val viewModel: HistoryViewModel = viewModel(factory = HistoryViewModel.factory(container.historyRepository))
             val state by viewModel.uiState.collectAsStateWithLifecycle()
             val clearFailed by viewModel.clearFailed.collectAsStateWithLifecycle()
@@ -69,7 +71,7 @@ fun PlantIdNavHost(
                 state = state,
                 clearFailed = clearFailed,
                 onIdentifyPlant = onIdentifyPlant,
-                onOpenRecord = { id -> navController.navigate(HistoryDetailRoute(id)) { launchSingleTop = true } },
+                onOpenRecord = { id -> entry.ifResumed { navController.navigate(HistoryDetailRoute(id)) { launchSingleTop = true } } },
                 onClearAll = viewModel::clearAll,
                 onDismissClearError = viewModel::dismissClearError,
                 onRetry = viewModel::retry,
@@ -87,8 +89,8 @@ fun PlantIdNavHost(
                 state = state,
                 deleted = deleted,
                 deleteFailed = deleteFailed,
-                onBack = { navController.popBackStack() },
-                onViewCareGuide = { plantId -> navController.navigate(CareGuideRoute(plantId)) { launchSingleTop = true } },
+                onBack = { entry.ifResumed { navController.popBackStack() } },
+                onViewCareGuide = { plantId -> entry.ifResumed { navController.navigate(CareGuideRoute(plantId)) { launchSingleTop = true } } },
                 onDelete = viewModel::delete,
                 onDismissDeleteError = viewModel::dismissDeleteError,
                 onRetry = viewModel::retry,
@@ -106,9 +108,9 @@ fun PlantIdNavHost(
             val demoScenario = demo?.scenario?.collectAsStateWithLifecycle()?.value
             PhotoPreviewScreen(
                 photo = remember(photoId) { container.photoStore.fileFor(photoId) },
-                onBack = { navController.popBackStack() },
+                onBack = { entry.ifResumed { navController.popBackStack() } },
                 onChooseAnother = onIdentifyPlant,
-                onIdentify = { navController.navigate(IdentificationRoute(photoId)) { launchSingleTop = true } },
+                onIdentify = { entry.ifResumed { navController.navigate(IdentificationRoute(photoId)) { launchSingleTop = true } } },
                 demoScenario = demoScenario,
                 onDemoScenarioSelected = { demo?.select(it) },
             )
@@ -130,11 +132,11 @@ fun PlantIdNavHost(
                 photo = photo,
                 saveState = saveState,
                 onSave = viewModel::save,
-                onBack = { navController.popBackStack() },
+                onBack = { entry.ifResumed { navController.popBackStack() } },
                 onRetry = viewModel::retry,
                 onIdentifyAnother = onIdentifyPlant,
-                onBackToHome = { navController.popBackStack<HomeRoute>(inclusive = false) },
-                onViewCareGuide = { plantId -> navController.navigate(CareGuideRoute(plantId)) { launchSingleTop = true } },
+                onBackToHome = { entry.ifResumed { navController.popBackStack<HomeRoute>(inclusive = false) } },
+                onViewCareGuide = { plantId -> entry.ifResumed { navController.navigate(CareGuideRoute(plantId)) { launchSingleTop = true } } },
             )
         }
         composable<CareGuideRoute> { entry ->
@@ -145,7 +147,7 @@ fun PlantIdNavHost(
             val state by viewModel.uiState.collectAsStateWithLifecycle()
             CareGuideScreen(
                 state = state,
-                onBack = { navController.popBackStack() },
+                onBack = { entry.ifResumed { navController.popBackStack() } },
                 onRetry = viewModel::retry,
             )
         }
@@ -174,6 +176,15 @@ fun NavHostController.navigateToPhotoPreview(photoId: String) {
     navigate(PhotoPreviewRoute(photoId)) {
         popUpTo<PhotoPreviewRoute> { inclusive = true }
     }
+}
+
+/**
+ * Runs [action] only while this destination is the resumed, top screen. A
+ * second tap during a navigation animation is ignored, so double-tapping Back
+ * can't pop two screens and a double tap can't navigate twice (Sprint 6).
+ */
+internal inline fun NavBackStackEntry.ifResumed(action: () -> Unit) {
+    if (lifecycle.currentState == Lifecycle.State.RESUMED) action()
 }
 
 /** True if this destination is [destination] or nested inside it. */
