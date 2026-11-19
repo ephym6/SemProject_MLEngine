@@ -41,6 +41,7 @@ class IdentificationViewModelTest {
         photo = photo,
         service = service,
         history = history,
+        savedState = SavedStateHandle(),
         clock = { now },
         newEventId = { "event-${++nextId}" },
     )
@@ -71,7 +72,7 @@ class IdentificationViewModelTest {
     @Test
     fun `starts identifying immediately and shows the service outcome`() = runTest(dispatcher) {
         val service = FakeService(model) { delay(500); unsupported }
-        val viewModel = IdentificationViewModel(photo, service, history)
+        val viewModel = IdentificationViewModel(photo, service, history, SavedStateHandle())
 
         assertEquals(UiState.Identifying, viewModel.uiState.value)
         advanceUntilIdle()
@@ -83,7 +84,7 @@ class IdentificationViewModelTest {
     @Test
     fun `missing photo fails without calling the service`() = runTest(dispatcher) {
         val service = FakeService(model) { unsupported }
-        val viewModel = IdentificationViewModel(photo = null, service = service, history = history)
+        val viewModel = IdentificationViewModel(photo = null, service = service, history = history, savedState = SavedStateHandle())
         advanceUntilIdle()
 
         assertEquals(failed(FailureReason.PhotoUnavailable), viewModel.uiState.value)
@@ -93,7 +94,7 @@ class IdentificationViewModelTest {
     @Test
     fun `an exception becomes a processing failure, not a crash or fake success`() = runTest(dispatcher) {
         val service = FakeService(model) { error("inference exploded") }
-        val viewModel = IdentificationViewModel(photo, service, history)
+        val viewModel = IdentificationViewModel(photo, service, history, SavedStateHandle())
         advanceUntilIdle()
 
         assertEquals(failed(FailureReason.ProcessingFailed), viewModel.uiState.value)
@@ -102,7 +103,7 @@ class IdentificationViewModelTest {
     @Test
     fun `a request that never finishes times out`() = runTest(dispatcher) {
         val service = FakeService(model) { awaitCancellation() }
-        val viewModel = IdentificationViewModel(photo, service, history, timeoutMillis = 1_000)
+        val viewModel = IdentificationViewModel(photo, service, history, SavedStateHandle(), timeoutMillis = 1_000)
 
         advanceTimeBy(999)
         runCurrent()
@@ -116,7 +117,7 @@ class IdentificationViewModelTest {
     @Test
     fun `retry while identifying is ignored`() = runTest(dispatcher) {
         val service = FakeService(model) { delay(500); unsupported }
-        val viewModel = IdentificationViewModel(photo, service, history)
+        val viewModel = IdentificationViewModel(photo, service, history, SavedStateHandle())
 
         viewModel.retry()
         viewModel.retry()
@@ -128,7 +129,7 @@ class IdentificationViewModelTest {
     @Test
     fun `retry after a failure runs again and can succeed`() = runTest(dispatcher) {
         val service = FakeService(model) { IdentificationOutcome.Failed(model, FailureReason.ProcessingFailed) }
-        val viewModel = IdentificationViewModel(photo, service, history)
+        val viewModel = IdentificationViewModel(photo, service, history, SavedStateHandle())
         advanceUntilIdle()
 
         service.behaviour = { delay(100); unsupported }
