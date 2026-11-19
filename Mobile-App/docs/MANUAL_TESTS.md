@@ -97,3 +97,21 @@ Run them before these checks, not after.
 | 5.13 | History with 10+ records | Scrolls smoothly; newest first | |
 | 5.14 | Settings → Google → Backup (if available) | PlantID isn't backed up (or backs up no data) | |
 | 5.15 | Dark mode + large font + TalkBack on History and a saved record | Readable, nothing clipped; rows read name, status and date | |
+
+## Sprint 6 — Hardening
+
+Device: ____________  Android: ____  Build/commit: ________  Tester: ____  Date: ________
+
+| # | Steps | Expected | Result |
+|---|---|---|---|
+| 6.1 | Settings → Display → **Font size** largest, **Display size** largest; walk Home → photo → preview → result → care guide → save → History → saved result → About | Nothing clipped or overlapping; every screen scrolls; all buttons reachable | |
+| 6.2 | Same walk with the smallest display size | Layout still sensible | |
+| 6.3 | Dark mode, same walk | Readable everywhere | |
+| 6.4 | Developer options → **Don't keep activities** ON. Get a *Not confident* result, switch to another app, come back | Same *Not confident* result (not re-identified); Save still works once | |
+| 6.5 | With 6.4 still ON: save a result, switch away and back | Still shows "Saved to history"; History has it once | |
+| 6.6 | With 6.4 still ON: take a photo with the camera | Photo reaches the preview. Turn the option **OFF** afterwards | |
+| 6.7 | **TalkBack** on: complete identify → result → care guide → save → History → delete using only TalkBack gestures | Every control is announced with a meaningful label; status isn't only colour; dialogs are announced | |
+| 6.8 | Double-tap Back quickly on the care guide, the saved result and the preview | Goes back exactly one screen each time | |
+| 6.9 | Double-tap **View care guide**, a History row, **Identify plant** | Opens one screen, once | |
+| 6.10 | Airplane mode, full walk | Everything works offline | |
+| 6.11 | Receive a call / open notifications / lock the screen during *Analyzing* (slow demo) | Returns to a sensible state; no crash | |
