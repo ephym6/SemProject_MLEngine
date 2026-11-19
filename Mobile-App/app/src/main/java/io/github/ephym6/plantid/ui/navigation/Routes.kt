@@ -17,6 +17,10 @@ data object HistoryRoute
 @Serializable
 data object AboutRoute
 
+/** Preview of the selected photo. [photoId] is a file name from PhotoStore. */
+@Serializable
+data class PhotoPreviewRoute(val photoId: String)
+
 /** Destinations shown in the bottom navigation bar, in display order. */
 enum class TopLevelDestination(
     val route: Any,
