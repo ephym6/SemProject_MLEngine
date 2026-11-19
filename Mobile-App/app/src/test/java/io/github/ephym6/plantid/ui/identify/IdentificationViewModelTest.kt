@@ -1,9 +1,11 @@
 package io.github.ephym6.plantid.ui.identify
 
+import androidx.lifecycle.SavedStateHandle
 import io.github.ephym6.plantid.domain.identification.FailureReason
 import io.github.ephym6.plantid.domain.identification.IdentificationOutcome
 import io.github.ephym6.plantid.domain.identification.IdentificationService
 import io.github.ephym6.plantid.domain.identification.ModelInfo
+import io.github.ephym6.plantid.domain.identification.PlantSummary
 import io.github.ephym6.plantid.ui.identify.IdentificationViewModel.UiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -220,5 +222,83 @@ class IdentificationViewModelTest {
         viewModel.save()
         advanceUntilIdle()
         assertEquals(listOf("event-1", "event-2"), history.savedEntries.map { it.id })
+    }
+
+    // ---- Process death ----
+
+    private fun recreate(service: IdentificationService, savedState: SavedStateHandle) = IdentificationViewModel(
+        photo = photo,
+        service = service,
+        history = history,
+        savedState = savedState,
+        clock = { now.plusSeconds(3600) },
+        newEventId = { "event-after-restart" },
+    )
+
+    @Test
+    fun `a finished result comes back unchanged after process death, without re-identifying`() = runTest(dispatcher) {
+        val savedState = SavedStateHandle()
+        val identified = IdentificationOutcome.Identified(
+            model, "Epipremnum_aureum", PlantSummary("epipremnum_aureum", "Golden Pothos", "Epipremnum aureum", null),
+        )
+        val service = FakeService(model) { identified }
+        IdentificationViewModel(photo, service, history, savedState, clock = { now }, newEventId = { "event-1" })
+        advanceUntilIdle()
+
+        val restored = recreate(service, savedState)
+
+        assertEquals(UiState.Finished(identified), restored.uiState.value)
+        assertEquals("not identified again", 1, service.calls)
+        advanceUntilIdle()
+        restored.save()
+        advanceUntilIdle()
+        val entry = history.savedEntries.single()
+        assertEquals("same event, so saving stays idempotent", "event-1", entry.id)
+        assertEquals("original time kept", now, entry.identifiedAt)
+    }
+
+    @Test
+    fun `a result saved before process death is still shown as saved`() = runTest(dispatcher) {
+        val savedState = SavedStateHandle()
+        val service = FakeService(model) { unsupported }
+        val first = IdentificationViewModel(photo, service, history, savedState, clock = { now }, newEventId = { "event-1" })
+        advanceUntilIdle()
+        first.save()
+        advanceUntilIdle()
+
+        val restored = recreate(service, savedState)
+        advanceUntilIdle()
+
+        assertEquals(SaveState.Saved, restored.saveState.value)
+    }
+
+    @Test
+    fun `a failure is restored too and can still be retried`() = runTest(dispatcher) {
+        val savedState = SavedStateHandle()
+        val service = FakeService(model) { IdentificationOutcome.Failed(model, FailureReason.TimedOut) }
+        IdentificationViewModel(photo, service, history, savedState)
+        advanceUntilIdle()
+
+        val restored = recreate(service, savedState)
+        assertEquals(failed(FailureReason.TimedOut), restored.uiState.value)
+        assertEquals(SaveState.NotSaveable, restored.saveState.value)
+
+        service.behaviour = { unsupported }
+        restored.retry()
+        advanceUntilIdle()
+        assertEquals(UiState.Finished(unsupported), restored.uiState.value)
+    }
+
+    @Test
+    fun `unreadable saved state falls back to identifying again`() = runTest(dispatcher) {
+        val savedState = SavedStateHandle(mapOf(IdentificationViewModel.KEY_RESULT to "{not json"))
+        val service = FakeService(model) { unsupported }
+
+        val viewModel = recreate(service, savedState)
+        assertEquals(UiState.Identifying, viewModel.uiState.value)
+        advanceUntilIdle()
+
+        assertEquals(UiState.Finished(unsupported), viewModel.uiState.value)
+        assertEquals(1, service.calls)
     }
 }
