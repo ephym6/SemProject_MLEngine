@@ -1,5 +1,6 @@
 package io.github.ephym6.plantid.domain.identification
 
+import kotlinx.serialization.Serializable
 import java.io.File
 
 /**
@@ -26,6 +27,7 @@ interface IdentificationService {
  * @param isDemo true for the mock. Every result from a demo identifier must be
  *   visibly labelled as demo output, never presented as a real prediction.
  */
+@Serializable
 data class ModelInfo(
     val name: String,
     val version: String?,
