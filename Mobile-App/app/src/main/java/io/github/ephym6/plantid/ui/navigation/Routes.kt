@@ -21,6 +21,10 @@ data object AboutRoute
 @Serializable
 data class PhotoPreviewRoute(val photoId: String)
 
+/** Identifying, then the result, for the photo [photoId]. */
+@Serializable
+data class IdentificationRoute(val photoId: String)
+
 /** Destinations shown in the bottom navigation bar, in display order. */
 enum class TopLevelDestination(
     val route: Any,

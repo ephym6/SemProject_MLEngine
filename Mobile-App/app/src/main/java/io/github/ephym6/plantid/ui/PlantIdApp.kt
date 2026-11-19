@@ -67,8 +67,8 @@ fun PlantIdApp(
     ) { innerPadding ->
         PlantIdNavHost(
             navController = navController,
+            container = container,
             onIdentifyPlant = photoSelection::openSourceChooser,
-            photoFileFor = container.photoStore::fileFor,
             modifier = Modifier
                 .padding(innerPadding)
                 .consumeWindowInsets(innerPadding),
