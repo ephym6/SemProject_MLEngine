@@ -54,9 +54,42 @@
     <string name="preview_tip_light">Avoid very dark photos.</string>
     <string name="preview_tip_single">Keep one main plant in the photo.</string>
     <string name="preview_identify">Identify plant</string>
-    <string name="preview_coming_soon_title">Identification is coming in the next build</string>
-    <string name="preview_coming_soon_message">For now you can check your photo and choose another one.</string>
     <string name="preview_choose_another">Choose another photo</string>
+
+    <!-- Demo mode (shown only while the mock identifier is in use) -->
+    <string name="demo_mode_title">Demo mode</string>
+    <string name="demo_mode_message">Real plant identification isn\'t connected yet. Choose which demo outcome PlantID should show.</string>
+    <string name="demo_scenario_identified">Plant identified</string>
+    <string name="demo_scenario_missing_details">Identified, some details missing</string>
+    <string name="demo_scenario_uncertain">Not confident</string>
+    <string name="demo_scenario_unsupported">No supported plant</string>
+    <string name="demo_scenario_failure">Something goes wrong</string>
+    <string name="demo_scenario_slow">Plant identified (slow)</string>
+    <string name="demo_banner_title">Demo result</string>
+    <string name="demo_banner_message">This comes from PlantID\'s demo mode, not from a plant-identification model. It doesn\'t describe your plant.</string>
+
+    <!-- Identifying and results -->
+    <string name="identifying_title">Identifying</string>
+    <string name="identifying_message">Analyzing your plant…</string>
+    <string name="result_title">Result</string>
+    <string name="result_photo_description">Your plant photo</string>
+    <string name="photo_unavailable_short">Photo no longer available</string>
+    <string name="result_identified_title">Match found</string>
+    <string name="result_identified_message">PlantID matched your photo to one of its supported plants. Results can be wrong, so compare it with your plant.</string>
+    <string name="result_name_fallback">Supported plant</string>
+    <string name="result_description_title">About this plant</string>
+    <string name="result_uncertain_title">We couldn\'t confidently identify this plant</string>
+    <string name="result_uncertain_message">Try another photo with the leaves clearly visible and good lighting.</string>
+    <string name="result_unsupported_title">No supported plant found</string>
+    <string name="result_unsupported_message">This photo didn\'t match any of the plants PlantID supports. It may be a different plant, or the plant may not be clear in the photo.</string>
+    <string name="result_failed_title">We couldn\'t analyze this photo</string>
+    <string name="result_failed_processing">Something went wrong while analyzing your photo. Please try again.</string>
+    <string name="result_failed_timed_out">Analyzing your photo took too long. Please try again.</string>
+    <string name="result_failed_model">Plant identification isn\'t available right now. Please try again.</string>
+    <string name="result_failed_photo">Your photo is no longer available. Choose another photo to continue.</string>
+    <string name="action_identify_another">Identify another plant</string>
+    <string name="action_try_another_photo">Try another photo</string>
+    <string name="action_back_to_home">Back to home</string>
 
     <!-- History -->
     <string name="history_title">History</string>

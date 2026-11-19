@@ -21,6 +21,10 @@ If a decision changes, mark the old one *superseded* and add a new entry.
 | D12 | 2026-11-19 | **Selected photo handling:** a picked or captured photo is copied into `cacheDir/selected_photos/` and its image header checked before preview. Only the newest photo is kept. The camera writes through a non-exported FileProvider. No runtime permissions (no CAMERA, no storage) | Unreadable or unsupported files are caught early; preview survives process death; data minimisation. Long-term retention for history is still open (Q6) |
 | D13 | 2026-11-19 | **Coil pinned to 3.3.0** | Coil 3.5+ requires Kotlin 2.4; the project compiler is Kotlin 2.2.10 (AGP 9 built-in Kotlin + Compose plugin). Revisit when the team upgrades Kotlin |
 | D14 | 2026-11-19 | **Photo selection is one app-level flow:** an activity-scoped `PhotoSelectionViewModel` + `PhotoSelectionHost` serve Home, History and Preview ("Choose another photo" replaces the preview; cancelling keeps the current one) | One implementation of launchers, errors and process-death handling |
+| D15 | 2026-11-19 | **Demo data is fictional** ("Demo Plant A", "Demo species (fictional)"): the mock returns no real species, no scores and no plant facts. Replaced by curated records once Q1/Q4 are decided | A mock result can't be mistaken for a real prediction (spec §7.4) |
+| D16 | 2026-11-19 | **Demo mode picker (was Q10):** shown on the photo preview whenever the mock identifier is in use (every build until Sprint 7); it disappears automatically with a real identifier. Every demo result shows a "Demo result" banner | Deterministic testing; mock output always labelled |
+| D17 | 2026-11-19 | **Result presentation:** no confidence numbers are shown (Q2 open). *Uncertain* never shows a species name; *Unsupported* shows no plant; *Failed* offers Try again (or Try another photo if the photo is gone). Care guide and Save buttons appear only when they work (Sprints 4–5) | Honest results; no buttons that do nothing |
+| D18 | 2026-11-19 | **Identification timeout 30 s (provisional)**, and any exception becomes *Failed*, never a fake success. Set the real value from measured on-device inference time in Sprint 7 | Avoids an endless loading state without inventing performance targets |
 
 ### Planned dependencies (added only in the sprint that needs them)
 
@@ -46,5 +50,4 @@ If a decision changes, mark the old one *superseded* and add a new entry.
 | Q6 | **Image retention for history** | The temporary preview copy is decided (D12). Still open: when a result is *saved*, keep the original, a downscaled copy, or no image? Delete it with the record? | Team | End of Sprint 3 |
 | Q7 | **History scope** | Is history part of the UI Prototype milestone? Individual delete? Clear-all? | Team | Sprint 5 |
 | Q9 | **Branding assets** | App icon/logo; currently template launcher icon | Team | Sprint 1–6 |
-| Q10 | **Mock-mode selection** | Proposal: debug-only scenario picker labelled DEMO; release builds never use mock outcomes silently | Team | Sprint 3 |
 | Q11 | **Research test protocol** | Separate model-accuracy evaluation from usability evaluation | Research lead + team | Sprint 8 |

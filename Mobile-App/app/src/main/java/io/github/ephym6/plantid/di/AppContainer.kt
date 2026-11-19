@@ -1,8 +1,11 @@
 package io.github.ephym6.plantid.di
 
 import android.content.Context
+import io.github.ephym6.plantid.data.identification.mock.DemoScenarioController
+import io.github.ephym6.plantid.data.identification.mock.MockIdentificationService
 import io.github.ephym6.plantid.data.image.CachePhotoStore
 import io.github.ephym6.plantid.data.image.PhotoStore
+import io.github.ephym6.plantid.domain.identification.IdentificationService
 
 /**
  * Manual dependency container (DECISIONS D5): one instance per app process,
@@ -13,4 +16,12 @@ class AppContainer(context: Context) {
     private val appContext = context.applicationContext
 
     val photoStore: PhotoStore by lazy { CachePhotoStore(appContext) }
+
+    // Until Sprint 7 the only identifier is the demo mock.
+    private val mockIdentification by lazy { MockIdentificationService() }
+
+    val identificationService: IdentificationService get() = mockIdentification
+
+    /** Non-null only while the demo identifier is in use; drives the "Demo mode" picker. */
+    val demoScenarios: DemoScenarioController? get() = mockIdentification
 }
