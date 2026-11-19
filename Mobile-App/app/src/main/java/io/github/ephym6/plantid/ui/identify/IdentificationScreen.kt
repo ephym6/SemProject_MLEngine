@@ -153,7 +153,7 @@ private fun ResultContent(
             PrimaryButton(
                 text = stringResource(R.string.action_view_care_guide),
                 onClick = { onViewCareGuide(outcome.plant.plantId) },
-                iconRes = R.drawable.ic_eco,
+                iconRes = R.drawable.ic_menu_book,
                 modifier = Modifier.fillMaxWidth(),
             )
             SecondaryButton(
