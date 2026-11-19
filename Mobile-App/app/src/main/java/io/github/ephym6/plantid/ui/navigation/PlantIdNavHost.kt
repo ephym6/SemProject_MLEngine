@@ -1,8 +1,11 @@
 package io.github.ephym6.plantid.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -12,23 +15,26 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import io.github.ephym6.plantid.BuildConfig
+import io.github.ephym6.plantid.di.AppContainer
 import io.github.ephym6.plantid.ui.about.AboutScreen
 import io.github.ephym6.plantid.ui.history.HistoryScreen
 import io.github.ephym6.plantid.ui.home.HomeScreen
+import io.github.ephym6.plantid.ui.identify.IdentificationScreen
+import io.github.ephym6.plantid.ui.identify.IdentificationViewModel
 import io.github.ephym6.plantid.ui.identify.PhotoPreviewScreen
-import java.io.File
 
 /**
- * All app destinations. Screens receive navigation callbacks, never the NavController.
+ * All app destinations, and the only place that wires screens to app
+ * dependencies. Screens receive state and callbacks, never the NavController
+ * or the [AppContainer].
  *
  * @param onIdentifyPlant opens the photo source chooser (handled at app level).
- * @param photoFileFor resolves a photo id from a route to its file.
  */
 @Composable
 fun PlantIdNavHost(
     navController: NavHostController,
+    container: AppContainer,
     onIdentifyPlant: () -> Unit,
-    photoFileFor: (photoId: String) -> File?,
     modifier: Modifier = Modifier,
 ) {
     NavHost(
@@ -50,10 +56,31 @@ fun PlantIdNavHost(
         }
         composable<PhotoPreviewRoute> { entry ->
             val photoId = entry.toRoute<PhotoPreviewRoute>().photoId
+            val demo = container.demoScenarios
+            val demoScenario = demo?.scenario?.collectAsStateWithLifecycle()?.value
             PhotoPreviewScreen(
-                photo = remember(photoId) { photoFileFor(photoId) },
+                photo = remember(photoId) { container.photoStore.fileFor(photoId) },
                 onBack = { navController.popBackStack() },
                 onChooseAnother = onIdentifyPlant,
+                onIdentify = { navController.navigate(IdentificationRoute(photoId)) { launchSingleTop = true } },
+                demoScenario = demoScenario,
+                onDemoScenarioSelected = { demo?.select(it) },
+            )
+        }
+        composable<IdentificationRoute> { entry ->
+            val photoId = entry.toRoute<IdentificationRoute>().photoId
+            val photo = remember(photoId) { container.photoStore.fileFor(photoId) }
+            val viewModel: IdentificationViewModel = viewModel(
+                factory = IdentificationViewModel.factory(photo, container.identificationService),
+            )
+            val state by viewModel.uiState.collectAsStateWithLifecycle()
+            IdentificationScreen(
+                state = state,
+                photo = photo,
+                onBack = { navController.popBackStack() },
+                onRetry = viewModel::retry,
+                onIdentifyAnother = onIdentifyPlant,
+                onBackToHome = { navController.popBackStack<HomeRoute>(inclusive = false) },
             )
         }
     }
@@ -73,9 +100,9 @@ fun NavHostController.navigateToTopLevel(destination: TopLevelDestination) {
 }
 
 /**
- * Opens the preview for a newly selected photo. If a preview is already open
- * ("Choose another photo"), it is replaced, so Back still goes to where the
- * flow started.
+ * Opens the preview for a newly selected photo. An existing preview, and any
+ * result above it ("Identify another plant"), is replaced, so Back still goes
+ * to where the flow started.
  */
 fun NavHostController.navigateToPhotoPreview(photoId: String) {
     navigate(PhotoPreviewRoute(photoId)) {
