@@ -5,11 +5,11 @@ plant, see the identification result, read its care guide, and revisit past
 identifications. All processing is meant to happen on the device, and the app
 does not need an account.
 
-> **Current status: Sprint 4 (care guide).** You can take or choose a photo,
-> run a **demo** identification and open the care guide for the identified plant.
-> Care guides come from the bundled plant data for the 7 supported plants. All
+> **Current status: Sprint 5 (local history).** The interface flow is in
+> place: take or choose a photo, run a **demo** identification, open the care
+> guide, save results to History, and revisit or delete them. All
 > identification results still come from a clearly labelled mock: **no real
-> model is connected** (Sprint 7). Saved history arrives in Sprint 5.
+> model is connected yet** (Sprint 7, after interface hardening in Sprint 6).
 
 ## Requirements
 
@@ -60,6 +60,8 @@ domain/identification/     # IdentificationService contract and outcome types
 domain/plant/              # Plant, PlantRepository, CareRecommendations (rule-based care tips)
 data/image/                # PhotoStore: private copy of the selected photo
 data/plant/                # reads the bundled assets/plants.json
+domain/history/            # HistoryRecord, HistoryRepository
+data/history/              # Room database + downscaled photo copies for saved results
 data/identification/mock/  # DEMO-only mock identifier, demo scenarios, fictional plants
 ui/
 ├── PlantIdApp.kt          # app shell: bottom bar, navigation host, photo selection
@@ -71,8 +73,19 @@ ui/
 ├── home/  history/  about/   # one package per screen
 ```
 
-Planned additions: local history (Sprint 5), the real on-device identifier
-(Sprint 7).
+Planned additions: the real on-device identifier (Sprint 7).
+
+### Saved history
+
+- Saved results live in a Room database (`plantid.db`, schema in
+  `app/schemas/`). Each record is a snapshot of what was shown, so old records
+  don't change when plant data does.
+- Each saved result keeps a downscaled photo copy (≤ 1024 px, no EXIF/location)
+  in private storage. It's deleted with the record or by Clear history.
+- PlantID's data is excluded from Android backups and device transfer.
+- **Database changes** need a version bump and a migration in
+  `PlantIdDatabase`. Commit the new schema JSON.
+- **Device tests clear the debug app's history** (`HistoryFlowTest`).
 
 ### Plant data and care guides
 
