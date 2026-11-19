@@ -18,8 +18,10 @@
 
     <!-- Home -->
     <string name="home_tagline">Identify a plant from a photo and explore its care guide.</string>
-    <string name="home_coming_soon_title">Identification isn\'t available yet</string>
-    <string name="home_coming_soon_message">You can already take or choose a photo and check it. Identifying the plant will be added next.</string>
+    <string name="home_demo_title">Demo mode</string>
+    <string name="home_demo_message">Real plant identification isn\'t connected yet. Results come from a demo and don\'t describe your plant.</string>
+    <string name="home_recent_title">Recent identifications</string>
+    <string name="action_view_all">View all</string>
     <string name="home_scope_title">Selected plants only</string>
     <string name="home_scope_message">PlantID works with a small set of common indoor plants. It can\'t identify every plant.</string>
     <string name="home_view_history">View history</string>
@@ -127,6 +129,41 @@
     <string name="history_title">History</string>
     <string name="history_empty_title">No identifications yet</string>
     <string name="history_empty_message">Your identified plants will appear here. Start by identifying your first plant.</string>
+    <string name="history_loading">Loading history…</string>
+    <string name="history_unidentified">Unidentified plant</string>
+    <string name="history_status_identified">Identified</string>
+    <string name="history_status_uncertain">Not confident</string>
+    <string name="history_status_unsupported">No supported plant</string>
+    <string name="history_demo_tag">Demo</string>
+    <string name="history_load_error_title">History unavailable</string>
+    <string name="history_load_error_message">Your saved identifications couldn\'t be loaded. Please try again.</string>
+    <string name="history_clear_all">Clear history</string>
+    <string name="history_clear_title">Clear all history?</string>
+    <plurals name="history_clear_message">
+        <item quantity="one">This deletes %d saved identification and its photo from this device. This can\'t be undone.</item>
+        <item quantity="other">This deletes %d saved identifications and their photos from this device. This can\'t be undone.</item>
+    </plurals>
+    <string name="action_clear_all">Clear all</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
+    <string name="history_error_title">Something went wrong</string>
+    <string name="history_clear_failed">History couldn\'t be cleared. Please try again.</string>
+    <string name="history_delete_failed">This result couldn\'t be deleted. Please try again.</string>
+    <string name="history_detail_title">Saved result</string>
+    <string name="history_identified_on">Identified on %1$s</string>
+    <string name="action_delete_from_history">Delete from history</string>
+    <string name="history_delete_title">Delete this result?</string>
+    <string name="history_delete_message">This deletes the saved result and its photo from this device. This can\'t be undone.</string>
+    <string name="history_not_found_title">Result not found</string>
+    <string name="history_not_found_message">It may have been deleted.</string>
+
+    <!-- Saving a result -->
+    <string name="action_save_to_history">Save to history</string>
+    <string name="history_saving">Saving…</string>
+    <string name="history_saved_title">Saved to history</string>
+    <string name="history_saved_message">You can find this result in History.</string>
+    <string name="history_save_failed_title">Couldn\'t save this result</string>
+    <string name="history_save_failed_message">Please try again.</string>
 
     <!-- About. Keep the privacy text in line with what the app actually does (DECISIONS D11). -->
     <string name="about_title">About</string>
@@ -143,6 +180,6 @@
     <string name="about_sources_title">Care information</string>
     <string name="about_sources_body">Care guides use values from %1$s (%2$s). Toxicity information from the source is not shown.</string>
     <string name="about_privacy_title">Privacy</string>
-    <string name="about_privacy_body">PlantID does not need an account and does not use the internet. When you take or choose a photo, PlantID keeps a temporary copy on this device so it can show it to you. Only the most recent photo is kept, and nothing is uploaded. Photos you take in PlantID are not added to your gallery.</string>
+    <string name="about_privacy_body">PlantID does not need an account and does not use the internet. When you take or choose a photo, PlantID keeps a temporary copy on this device so it can show it to you; only the most recent one is kept. If you save a result, it stays in History on this device, with a smaller copy of the photo without location data, until you delete it. Nothing is uploaded, and PlantID\'s data is left out of device backups. Photos you take in PlantID are not added to your gallery.</string>
     <string name="about_version">Version %1$s</string>
 </resources>

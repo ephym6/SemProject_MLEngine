@@ -29,6 +29,10 @@ data class IdentificationRoute(val photoId: String)
 @Serializable
 data class CareGuideRoute(val plantId: String)
 
+/** A saved history record. */
+@Serializable
+data class HistoryDetailRoute(val recordId: String)
+
 /** Destinations shown in the bottom navigation bar, in display order. */
 enum class TopLevelDestination(
     val route: Any,
