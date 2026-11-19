@@ -7,4 +7,34 @@
     <string name="status_warning">Warning</string>
     <string name="status_error">Error</string>
     <string name="action_try_again">Try again</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_history">History</string>
+    <string name="nav_about">About</string>
+
+    <!-- Home -->
+    <string name="home_tagline">Identify a plant from a photo and explore its care guide.</string>
+    <string name="home_coming_soon_title">Plant identification is coming soon</string>
+    <string name="home_coming_soon_message">This early build shows the app layout only. Taking or choosing a photo will be added next.</string>
+    <string name="home_scope_title">Selected plants only</string>
+    <string name="home_scope_message">PlantID works with a small set of common indoor plants. It can\'t identify every plant.</string>
+    <string name="home_view_history">View history</string>
+
+    <!-- History -->
+    <string name="history_title">History</string>
+    <string name="history_empty_title">No identifications yet</string>
+    <string name="history_empty_message">Your identified plants will appear here. Start by identifying your first plant.</string>
+
+    <!-- About. Keep the privacy text in line with what the app actually does. -->
+    <string name="about_title">About</string>
+    <string name="about_purpose_title">What PlantID does</string>
+    <string name="about_purpose_body">PlantID helps you identify selected common indoor plants from a photo and explore their care guide.</string>
+    <string name="about_prototype_title">Research prototype</string>
+    <string name="about_prototype_body">PlantID is being built for an academic research project. It supports a limited set of plants, and its results are not a guarantee.</string>
+    <string name="about_supported_title">Supported plants</string>
+    <string name="about_supported_body">The list of supported plants will appear here once the project team has confirmed it.</string>
+    <string name="about_privacy_title">Privacy</string>
+    <string name="about_privacy_body">PlantID does not need an account and does not use the internet. This version does not take, store or upload any photos.</string>
+    <string name="about_version">Version %1$s</string>
 </resources>
