@@ -40,12 +40,16 @@ class IdentificationScreenTest {
 
     private fun str(@StringRes id: Int): String = composeRule.activity.getString(id)
 
-    private fun show(state: UiState) {
+    private var saves = 0
+
+    private fun show(state: UiState, saveState: SaveState = SaveState.NotSaveable) {
         composeRule.setContent {
             PlantIDTheme {
                 IdentificationScreen(
                     state = state,
                     photo = null,
+                    saveState = saveState,
+                    onSave = { saves++ },
                     onBack = {},
                     onRetry = { retries++ },
                     onIdentifyAnother = { identifyAnother++ },
@@ -140,6 +144,39 @@ class IdentificationScreenTest {
 
         assertEquals(0, retries)
         assertEquals(1, identifyAnother)
+    }
+
+    @Test
+    fun saveButtonSavesTheResult() {
+        val result = UiState.Finished(IdentificationOutcome.Unsupported(demo))
+
+        show(result, SaveState.NotSaved)
+        composeRule.onNodeWithText(str(R.string.action_save_to_history)).performScrollTo().performClick()
+        assertEquals(1, saves)
+    }
+
+    @Test
+    fun savedResultShowsConfirmationInsteadOfTheButton() {
+        show(UiState.Finished(IdentificationOutcome.Unsupported(demo)), SaveState.Saved)
+
+        composeRule.onNodeWithText(str(R.string.history_saved_title)).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText(str(R.string.action_save_to_history)).assertDoesNotExist()
+    }
+
+    @Test
+    fun failedSaveCanBeRetried() {
+        show(UiState.Finished(IdentificationOutcome.Unsupported(demo)), SaveState.Failed)
+
+        composeRule.onNodeWithText(str(R.string.history_save_failed_title)).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText(str(R.string.action_try_again)).performScrollTo().performClick()
+        assertEquals(1, saves)
+    }
+
+    @Test
+    fun failedIdentificationCannotBeSaved() {
+        show(UiState.Finished(IdentificationOutcome.Failed(demo, FailureReason.ProcessingFailed)))
+
+        composeRule.onNodeWithText(str(R.string.action_save_to_history)).assertDoesNotExist()
     }
 
     @Test
