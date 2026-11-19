@@ -14,11 +14,12 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.ephym6.plantid.PlantIdApplication
 import io.github.ephym6.plantid.R
-import io.github.ephym6.plantid.data.identification.mock.DemoPlants
 import io.github.ephym6.plantid.data.identification.mock.DemoScenario
+import io.github.ephym6.plantid.data.identification.mock.MockIdentificationService
 import io.github.ephym6.plantid.data.image.PhotoImportResult
 import io.github.ephym6.plantid.ui.PlantIdApp
 import io.github.ephym6.plantid.ui.navigation.navigateToPhotoPreview
@@ -47,6 +48,7 @@ class IdentificationFlowTest {
     private val container get() = (composeRule.activity.application as PlantIdApplication).container
     private lateinit var navController: NavHostController
     private lateinit var source: File
+    private lateinit var demoPlantName: String
 
     private fun str(@StringRes id: Int): String = composeRule.activity.getString(id)
 
@@ -54,6 +56,10 @@ class IdentificationFlowTest {
     fun setUp() {
         // The container is app-wide, so reset the demo scenario between tests.
         container.demoScenarios!!.select(DemoScenario.Identified)
+        demoPlantName = runBlocking {
+            container.plantRepository.catalog().getOrThrow()
+                .byClassLabel(MockIdentificationService.DEMO_CLASS_LABEL)!!.commonName!!
+        }
         source = File(composeRule.activity.cacheDir, "flow_test_source.png")
         source.outputStream().use {
             Bitmap.createBitmap(32, 24, Bitmap.Config.ARGB_8888).compress(Bitmap.CompressFormat.PNG, 100, it)
@@ -87,7 +93,7 @@ class IdentificationFlowTest {
     fun identifiedDemoOutcomeReachesTheResult() {
         identifyWith(DemoScenario.Identified)
 
-        composeRule.waitUntilExactlyOneExists(hasText(DemoPlants.complete.commonName!!), 5_000)
+        composeRule.waitUntilExactlyOneExists(hasText(demoPlantName), 5_000)
         composeRule.onNodeWithText(str(R.string.demo_banner_title)).assertIsDisplayed()
     }
 
@@ -96,7 +102,7 @@ class IdentificationFlowTest {
         identifyWith(DemoScenario.Uncertain)
 
         composeRule.waitUntilExactlyOneExists(hasText(str(R.string.result_uncertain_title)), 5_000)
-        composeRule.onNodeWithText(DemoPlants.complete.commonName!!).assertDoesNotExist()
+        composeRule.onNodeWithText(demoPlantName).assertDoesNotExist()
 
         composeRule.onNodeWithText(str(R.string.action_try_another_photo)).performScrollTo().performClick()
         composeRule.onNodeWithText(str(R.string.photo_source_title)).assertIsDisplayed()
@@ -110,7 +116,31 @@ class IdentificationFlowTest {
         container.demoScenarios!!.select(DemoScenario.Identified)
         composeRule.onNodeWithText(str(R.string.action_try_again)).performScrollTo().performClick()
 
-        composeRule.waitUntilExactlyOneExists(hasText(DemoPlants.complete.commonName!!), 5_000)
+        composeRule.waitUntilExactlyOneExists(hasText(demoPlantName), 5_000)
+    }
+
+    @Test
+    fun identifiedResultOpensTheCareGuideAndBackReturnsToTheResult() {
+        identifyWith(DemoScenario.Identified)
+        composeRule.waitUntilExactlyOneExists(hasText(demoPlantName), 5_000)
+
+        composeRule.onNodeWithText(str(R.string.action_view_care_guide)).performScrollTo().performClick()
+        composeRule.waitUntilExactlyOneExists(hasText(str(R.string.care_watering_title)), 5_000)
+        composeRule.onNodeWithText(demoPlantName).assertIsDisplayed()
+        composeRule.onNodeWithText(str(R.string.care_source_title)).performScrollTo().assertIsDisplayed()
+
+        Espresso.pressBack()
+        composeRule.onNodeWithText(str(R.string.action_view_care_guide)).performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun plantWithoutACareRecordShowsNoCareGuide() {
+        identifyWith(DemoScenario.MissingDetails)
+        composeRule.waitUntilExactlyOneExists(hasText(str(R.string.action_view_care_guide)), 5_000)
+
+        composeRule.onNodeWithText(str(R.string.action_view_care_guide)).performScrollTo().performClick()
+
+        composeRule.waitUntilExactlyOneExists(hasText(str(R.string.care_none_title)), 5_000)
     }
 
     @Test
