@@ -2,14 +2,12 @@ package io.github.ephym6.plantid.ui.identify
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -17,10 +15,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import io.github.ephym6.plantid.R
@@ -32,14 +28,10 @@ import io.github.ephym6.plantid.ui.components.BackNavigationButton
 import io.github.ephym6.plantid.ui.components.CenteredScrollableColumn
 import io.github.ephym6.plantid.ui.components.ErrorState
 import io.github.ephym6.plantid.ui.components.LoadingIndicator
-import io.github.ephym6.plantid.ui.components.PlantIdCard
 import io.github.ephym6.plantid.ui.components.PlantIdTopAppBar
 import io.github.ephym6.plantid.ui.components.PlantPhoto
 import io.github.ephym6.plantid.ui.components.PrimaryButton
 import io.github.ephym6.plantid.ui.components.SecondaryButton
-import io.github.ephym6.plantid.ui.components.StatusMessage
-import io.github.ephym6.plantid.ui.components.StatusTone
-import io.github.ephym6.plantid.ui.components.TextCard
 import io.github.ephym6.plantid.ui.identify.IdentificationViewModel.UiState
 import io.github.ephym6.plantid.ui.theme.PlantIDTheme
 import io.github.ephym6.plantid.ui.theme.Spacing
@@ -54,13 +46,15 @@ import java.io.File
  * - Failed: error panel with Try again where retrying can help.
  * Demo results always carry a "Demo result" banner.
  *
- * Identified results offer the care guide. Save arrives with history (Sprint 5)
- * and isn't shown as a button that does nothing.
+ * Identified results offer the care guide. Every result except a failure can
+ * be saved to history.
  */
 @Composable
 fun IdentificationScreen(
     state: UiState,
     photo: File?,
+    saveState: SaveState,
+    onSave: () -> Unit,
     onBack: () -> Unit,
     onRetry: () -> Unit,
     onIdentifyAnother: () -> Unit,
@@ -84,6 +78,8 @@ fun IdentificationScreen(
             is UiState.Finished -> ResultContent(
                 outcome = state.outcome,
                 photo = photo,
+                saveState = saveState,
+                onSave = onSave,
                 onRetry = onRetry,
                 onIdentifyAnother = onIdentifyAnother,
                 onBackToHome = onBackToHome,
@@ -113,6 +109,8 @@ private fun IdentifyingContent(photo: File?, modifier: Modifier) {
 private fun ResultContent(
     outcome: IdentificationOutcome,
     photo: File?,
+    saveState: SaveState,
+    onSave: () -> Unit,
     onRetry: () -> Unit,
     onIdentifyAnother: () -> Unit,
     onBackToHome: () -> Unit,
@@ -126,29 +124,20 @@ private fun ResultContent(
             .padding(horizontal = Spacing.screenHorizontal, vertical = Spacing.lg),
         verticalArrangement = Arrangement.spacedBy(Spacing.lg),
     ) {
-        if (outcome.model.isDemo) {
-            StatusMessage(
-                tone = StatusTone.Warning,
-                title = stringResource(R.string.demo_banner_title),
-                message = stringResource(R.string.demo_banner_message),
-            )
-        }
+        if (outcome.model.isDemo) DemoResultBanner()
         when (outcome) {
-            is IdentificationOutcome.Identified -> IdentifiedContent(outcome.plant, photo)
-            is IdentificationOutcome.Uncertain -> NoMatchContent(
+            is IdentificationOutcome.Identified -> IdentifiedSummary(
+                commonName = outcome.plant.commonName,
+                scientificName = outcome.plant.scientificName,
+                description = outcome.plant.description,
                 photo = photo,
-                tone = StatusTone.Warning,
-                title = stringResource(R.string.result_uncertain_title),
-                message = stringResource(R.string.result_uncertain_message),
             )
-            is IdentificationOutcome.Unsupported -> NoMatchContent(
-                photo = photo,
-                tone = StatusTone.Info,
-                title = stringResource(R.string.result_unsupported_title),
-                message = stringResource(R.string.result_unsupported_message),
-            )
+            is IdentificationOutcome.Uncertain -> NoMatchSummary(NoMatchKind.Uncertain, photo)
+            is IdentificationOutcome.Unsupported -> NoMatchSummary(NoMatchKind.Unsupported, photo)
             is IdentificationOutcome.Failed -> FailedContent(outcome.reason, onRetry, onIdentifyAnother, onBackToHome)
         }
+        if (outcome is IdentificationOutcome.Failed) return@Column
+
         if (outcome is IdentificationOutcome.Identified) {
             PrimaryButton(
                 text = stringResource(R.string.action_view_care_guide),
@@ -156,13 +145,16 @@ private fun ResultContent(
                 iconRes = R.drawable.ic_menu_book,
                 modifier = Modifier.fillMaxWidth(),
             )
+        }
+        SaveToHistoryControl(state = saveState, onSave = onSave)
+        if (outcome is IdentificationOutcome.Identified) {
             SecondaryButton(
                 text = stringResource(R.string.action_identify_another),
                 onClick = onIdentifyAnother,
                 iconRes = R.drawable.ic_photo_camera,
                 modifier = Modifier.fillMaxWidth(),
             )
-        } else if (outcome !is IdentificationOutcome.Failed) {
+        } else {
             PrimaryButton(
                 text = stringResource(R.string.action_try_another_photo),
                 onClick = onIdentifyAnother,
@@ -170,73 +162,10 @@ private fun ResultContent(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
-        if (outcome !is IdentificationOutcome.Failed) {
-            SecondaryButton(
-                text = stringResource(R.string.action_back_to_home),
-                onClick = onBackToHome,
-                iconRes = R.drawable.ic_home,
-                modifier = Modifier.fillMaxWidth(),
-            )
+        TextButton(onClick = onBackToHome, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.action_back_to_home))
         }
     }
-}
-
-@Composable
-private fun ColumnScope.IdentifiedContent(plant: PlantSummary, photo: File?) {
-    // Photo and name in one card so they are visually associated.
-    PlantIdCard {
-        PlantPhoto(
-            photo = photo,
-            contentDescription = stringResource(R.string.result_photo_description),
-            unavailableMessage = stringResource(R.string.photo_unavailable_short),
-            aspectRatio = 4f / 3f,
-        )
-        Text(
-            text = plant.commonName ?: plant.scientificName ?: stringResource(R.string.result_name_fallback),
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier
-                .padding(top = Spacing.sm)
-                .semantics { heading() },
-        )
-        if (plant.commonName != null && plant.scientificName != null) {
-            Text(
-                text = plant.scientificName,
-                style = MaterialTheme.typography.bodyLarge,
-                fontStyle = FontStyle.Italic,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
-    StatusMessage(
-        tone = StatusTone.Success,
-        title = stringResource(R.string.result_identified_title),
-        message = stringResource(R.string.result_identified_message),
-        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
-    )
-    plant.description?.let { description ->
-        TextCard(title = stringResource(R.string.result_description_title), body = description)
-    }
-}
-
-@Composable
-private fun NoMatchContent(photo: File?, tone: StatusTone, title: String, message: String) {
-    PlantPhoto(
-        photo = photo,
-        contentDescription = stringResource(R.string.result_photo_description),
-        unavailableMessage = stringResource(R.string.photo_unavailable_short),
-        aspectRatio = 4f / 3f,
-    )
-    StatusMessage(
-        tone = tone,
-        title = title,
-        message = message,
-        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
-    )
-    Text(
-        text = stringResource(R.string.home_scope_message),
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
 }
 
 @Composable
@@ -281,6 +210,12 @@ private fun ResultPreview(state: UiState) {
         IdentificationScreen(
             state = state,
             photo = null,
+            saveState = if (state is UiState.Finished && state.outcome !is IdentificationOutcome.Failed) {
+                SaveState.NotSaved
+            } else {
+                SaveState.NotSaveable
+            },
+            onSave = {},
             onBack = {},
             onRetry = {},
             onIdentifyAnother = {},

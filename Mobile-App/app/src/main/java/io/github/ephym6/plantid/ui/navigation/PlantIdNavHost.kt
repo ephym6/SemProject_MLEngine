@@ -21,8 +21,12 @@ import io.github.ephym6.plantid.domain.plant.PlantCatalog
 import io.github.ephym6.plantid.ui.about.AboutScreen
 import io.github.ephym6.plantid.ui.care.CareGuideScreen
 import io.github.ephym6.plantid.ui.care.CareGuideViewModel
+import io.github.ephym6.plantid.ui.history.HistoryDetailScreen
+import io.github.ephym6.plantid.ui.history.HistoryDetailViewModel
 import io.github.ephym6.plantid.ui.history.HistoryScreen
+import io.github.ephym6.plantid.ui.history.HistoryViewModel
 import io.github.ephym6.plantid.ui.home.HomeScreen
+import io.github.ephym6.plantid.ui.home.HomeViewModel
 import io.github.ephym6.plantid.ui.identify.IdentificationScreen
 import io.github.ephym6.plantid.ui.identify.IdentificationViewModel
 import io.github.ephym6.plantid.ui.identify.PhotoPreviewScreen
@@ -47,13 +51,48 @@ fun PlantIdNavHost(
         modifier = modifier,
     ) {
         composable<HomeRoute> {
+            val viewModel: HomeViewModel = viewModel(factory = HomeViewModel.factory(container.historyRepository))
+            val recent by viewModel.recent.collectAsStateWithLifecycle()
             HomeScreen(
+                recent = recent,
+                isDemo = container.demoScenarios != null,
                 onIdentifyPlant = onIdentifyPlant,
                 onOpenHistory = { navController.navigateToTopLevel(TopLevelDestination.History) },
+                onOpenRecord = { id -> navController.navigate(HistoryDetailRoute(id)) { launchSingleTop = true } },
             )
         }
         composable<HistoryRoute> {
-            HistoryScreen(onIdentifyPlant = onIdentifyPlant)
+            val viewModel: HistoryViewModel = viewModel(factory = HistoryViewModel.factory(container.historyRepository))
+            val state by viewModel.uiState.collectAsStateWithLifecycle()
+            val clearFailed by viewModel.clearFailed.collectAsStateWithLifecycle()
+            HistoryScreen(
+                state = state,
+                clearFailed = clearFailed,
+                onIdentifyPlant = onIdentifyPlant,
+                onOpenRecord = { id -> navController.navigate(HistoryDetailRoute(id)) { launchSingleTop = true } },
+                onClearAll = viewModel::clearAll,
+                onDismissClearError = viewModel::dismissClearError,
+                onRetry = viewModel::retry,
+            )
+        }
+        composable<HistoryDetailRoute> { entry ->
+            val recordId = entry.toRoute<HistoryDetailRoute>().recordId
+            val viewModel: HistoryDetailViewModel = viewModel(
+                factory = HistoryDetailViewModel.factory(recordId, container.historyRepository),
+            )
+            val state by viewModel.uiState.collectAsStateWithLifecycle()
+            val deleted by viewModel.deleted.collectAsStateWithLifecycle()
+            val deleteFailed by viewModel.deleteFailed.collectAsStateWithLifecycle()
+            HistoryDetailScreen(
+                state = state,
+                deleted = deleted,
+                deleteFailed = deleteFailed,
+                onBack = { navController.popBackStack() },
+                onViewCareGuide = { plantId -> navController.navigate(CareGuideRoute(plantId)) { launchSingleTop = true } },
+                onDelete = viewModel::delete,
+                onDismissDeleteError = viewModel::dismissDeleteError,
+                onRetry = viewModel::retry,
+            )
         }
         composable<AboutRoute> {
             val catalog by produceState<Result<PlantCatalog>?>(initialValue = null) {
@@ -78,12 +117,19 @@ fun PlantIdNavHost(
             val photoId = entry.toRoute<IdentificationRoute>().photoId
             val photo = remember(photoId) { container.photoStore.fileFor(photoId) }
             val viewModel: IdentificationViewModel = viewModel(
-                factory = IdentificationViewModel.factory(photo, container.identificationService),
+                factory = IdentificationViewModel.factory(
+                    photo,
+                    container.identificationService,
+                    container.historyRepository,
+                ),
             )
             val state by viewModel.uiState.collectAsStateWithLifecycle()
+            val saveState by viewModel.saveState.collectAsStateWithLifecycle()
             IdentificationScreen(
                 state = state,
                 photo = photo,
+                saveState = saveState,
+                onSave = viewModel::save,
                 onBack = { navController.popBackStack() },
                 onRetry = viewModel::retry,
                 onIdentifyAnother = onIdentifyPlant,
