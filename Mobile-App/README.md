@@ -5,8 +5,10 @@ plant, see the identification result, read its care guide, and revisit past
 identifications. All processing is meant to happen on the device, and the app
 does not need an account.
 
-> **Current status: Sprint 0 (project foundation).** The app is still the
-> Compose starter template. No screens, mock identification or AI model yet.
+> **Current status: Sprint 1 (design system and navigation).** The app has its
+> theme (light/dark), shared UI components, and a bottom-navigation shell with
+> placeholder Home, History and About screens. There's no photo selection, no
+> identification (mock or real) and no saved history yet.
 
 ## Requirements
 
@@ -30,7 +32,7 @@ Run from `Mobile-App/` (use `gradlew.bat` on Windows cmd/PowerShell):
 ```bash
 ./gradlew assembleDebug              # build the debug APK
 ./gradlew testDebugUnitTest          # JVM unit tests
-./gradlew connectedDebugAndroidTest  # instrumented tests (needs a device/emulator)
+./gradlew connectedDebugAndroidTest  # instrumented + Compose UI tests (needs a device/emulator)
 ./gradlew installDebug               # install on a connected device
 ```
 
@@ -45,19 +47,33 @@ The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
 | Language / UI | Kotlin, Jetpack Compose, Material 3 |
 | Build | Android Gradle Plugin 9.5 (built-in Kotlin), Gradle wrapper 9.6, version catalog in `gradle/libs.versions.toml` |
 
-## Planned structure
+## Code structure
 
-The app will grow into this package layout (single `app` module) over the next
-sprints:
+Single `app` module. Current packages under `io.github.ephym6.plantid`:
 
 ```
-io.github.ephym6.plantid/
-├── MainActivity.kt
-├── di/            # manual dependency container
-├── domain/        # Plant, CareInfo, IdentificationOutcome, IdentificationService
-├── data/          # plant content, local history, mock identification
-└── ui/            # theme, shared components, navigation, one package per screen
+MainActivity.kt            # sets the theme and PlantIdApp
+ui/
+├── PlantIdApp.kt          # app shell: bottom bar + navigation host
+├── navigation/            # type-safe routes, NavHost, tab navigation helper
+├── theme/                 # colours, typography, shapes, Spacing/Sizes tokens
+├── components/            # buttons, cards, status message, loading/empty/error states, branding
+├── home/  history/  about/   # one package per screen
 ```
+
+Planned additions: `domain/` (Plant, CareInfo, IdentificationOutcome,
+IdentificationService), `data/` (plant content, local history, mock
+identification) and `di/` (manual dependency container).
+
+### UI conventions
+
+- Use `MaterialTheme.colorScheme` / `typography` / `shapes`, `PlantIDTheme.extendedColors`,
+  and the `Spacing` and `Sizes` tokens. Don't hard-code colours or dimensions in screens.
+- Build screens from the shared components in `ui/components/`. Every component and
+  screen has `@PreviewLightDark` previews.
+- All user-facing text goes in `res/values/strings.xml`.
+- Icons: Material Symbols Rounded as vector drawables in `res/drawable/ic_*.xml`.
+- Screens take state and callbacks only. They never receive the `NavController`.
 
 The UI only talks to an `IdentificationService` interface. Until the model is
 integrated, a **mock** implementation returns clearly labelled demo outcomes.
