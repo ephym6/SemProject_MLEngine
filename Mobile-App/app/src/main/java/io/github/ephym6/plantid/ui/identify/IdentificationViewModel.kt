@@ -49,7 +49,7 @@ class IdentificationViewModel(
     private val photo: File?,
     private val service: IdentificationService,
     private val history: HistoryRepository,
-    private val savedState: SavedStateHandle = SavedStateHandle(),
+    private val savedState: SavedStateHandle,
     private val timeoutMillis: Long = TIMEOUT_MILLIS,
     private val clock: () -> Instant = Instant::now,
     private val newEventId: () -> String = { UUID.randomUUID().toString() },
