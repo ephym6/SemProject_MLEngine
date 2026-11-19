@@ -18,15 +18,18 @@ If a decision changes, mark the old one *superseded* and add a new entry.
 | D9 | 2026-11-19 | **Icons:** Material Symbols Rounded, imported as vector drawables (`res/drawable/ic_*.xml`, Apache 2.0) rather than an icon library | No dependency; one consistent style. Add new icons the same way |
 | D10 | 2026-11-19 | **Navigation behaviour:** bottom bar for Home / History / About; switching tabs keeps Home at the bottom of the back stack, so Back returns to Home, then exits. Identification flow screens (Sprint 2+) hide the bar | Predictable Back; matches Android guidance |
 | D11 | 2026-11-19 | **About privacy text** describes only what the current build does. It must be updated in the same change that adds photo handling (Sprint 2) or storage (Sprint 5) | Spec: privacy wording must match the implementation |
+| D12 | 2026-11-19 | **Selected photo handling:** a picked or captured photo is copied into `cacheDir/selected_photos/` and its image header checked before preview. Only the newest photo is kept. The camera writes through a non-exported FileProvider. No runtime permissions (no CAMERA, no storage) | Unreadable or unsupported files are caught early; preview survives process death; data minimisation. Long-term retention for history is still open (Q6) |
+| D13 | 2026-11-19 | **Coil pinned to 3.3.0** | Coil 3.5+ requires Kotlin 2.4; the project compiler is Kotlin 2.2.10 (AGP 9 built-in Kotlin + Compose plugin). Revisit when the team upgrades Kotlin |
+| D14 | 2026-11-19 | **Photo selection is one app-level flow:** an activity-scoped `PhotoSelectionViewModel` + `PhotoSelectionHost` serve Home, History and Preview ("Choose another photo" replaces the preview; cancelling keeps the current one) | One implementation of launchers, errors and process-death handling |
 
 ### Planned dependencies (added only in the sprint that needs them)
 
 | Sprint | Dependency | Purpose |
 |---|---|---|
 | 1 ✅ | navigation-compose 2.10.2, Kotlin serialization plugin (runtime comes transitively) | Navigation, type-safe routes |
-| 2/3 | lifecycle-viewmodel-compose / runtime-compose | ViewModel state, moved from Sprint 1: placeholder screens have no state yet |
-| 2 | Coil 3 (coil-compose) | Downsampled image display |
-| 3 | kotlinx-coroutines-test | ViewModel / mock service tests |
+| 2 ✅ | lifecycle-viewmodel-compose / runtime-compose 2.11.1 | ViewModel state |
+| 2 ✅ | Coil 3.3.0 (coil-compose, no network module) | Downsampled, EXIF-aware image display (see D13) |
+| 2 ✅ | kotlinx-coroutines-test 1.10.2 (test only) | ViewModel tests |
 | 4 | kotlinx-serialization-json | Bundled plant/care data |
 | 5 | Room + KSP | Local history |
 | 7 | LiteRT (TensorFlow Lite) | On-device inference, after the model contract is agreed |
@@ -40,7 +43,7 @@ If a decision changes, mark the old one *superseded* and add a new entry.
 | Q3 | **Model export contract** | No `.tflite` yet. Need: file, label order, input size/format (notebook: 224×224 RGB, `preprocess_input` inside the graph), quantisation, model version | AI lead | Sprint 7 |
 | Q4 | **Care content and sources** | `care_tips.json` comes from a FloraDB *sample*. It has toxicity fields (not shown unless a reviewed source is approved; one entry is marked "inferred"), fixed watering-day counts (avoid presenting as rigid schedules), raw lux values (need plain-language wording), and no overview/soil/description | Research lead | Sprint 4 (description needed for Sprint 3 result screen) |
 | Q5 | **Care data location in app** | Proposal: the app bundles its own reviewed copy under `app/src/main/assets/`; root JSON files stay untouched | Team | Sprint 4 |
-| Q6 | **Image retention** | Keep a downscaled copy only when a result is saved? Delete it with the record? Behaviour when the file is missing? | Team | End of Sprint 3 |
+| Q6 | **Image retention for history** | The temporary preview copy is decided (D12). Still open: when a result is *saved*, keep the original, a downscaled copy, or no image? Delete it with the record? | Team | End of Sprint 3 |
 | Q7 | **History scope** | Is history part of the UI Prototype milestone? Individual delete? Clear-all? | Team | Sprint 5 |
 | Q9 | **Branding assets** | App icon/logo; currently template launcher icon | Team | Sprint 1–6 |
 | Q10 | **Mock-mode selection** | Proposal: debug-only scenario picker labelled DEMO; release builds never use mock outcomes silently | Team | Sprint 3 |
