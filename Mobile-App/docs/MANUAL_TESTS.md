@@ -53,3 +53,22 @@ model results.
 | 3.13 | Rotate during Analyzing and on the result | Identification is not restarted; same result shown | |
 | 3.14 | TalkBack on the result | Banner, status and plant name are read; status isn't conveyed by colour only | |
 | 3.15 | Dark mode + large font on each result type | Readable, nothing clipped, page scrolls | |
+
+## Sprint 4 — Care guide
+
+Device: ____________  Android: ____  Build/commit: ________  Tester: ____  Date: ________
+
+Identification results are still **demo** output.
+
+| # | Steps | Expected | Result |
+|---|---|---|---|
+| 4.1 | Demo *Plant identified* → result | Golden Pothos / *Epipremnum aureum*, **Demo result** banner, **View care guide** button | |
+| 4.2 | **View care guide** | Name, scientific name, family; *General guidance* note; Light 500–3,000 lux, Watering about every 7 days (with "not a fixed schedule" note), Temperature 15–30 °C, Humidity around 50 %; Source with CC BY-NC 4.0 | |
+| 4.3 | Compare 4.2 with `care_tips.json` for *Epipremnum aureum* | Every number matches the source; nothing extra (no toxicity, no invented advice) | |
+| 4.4 | Care guide → Back (top bar and system) | Returns to the same result | |
+| 4.5 | Demo *Identified, some details missing* → **View care guide** | "No care guide available"; Back returns to the result | |
+| 4.6 | Demo *Not confident* / *No supported plant* / *Something goes wrong* | **No** View care guide button | |
+| 4.7 | About tab | Lists 7 supported plants (common + scientific names); *Care information* card credits FloraDB and its licence | |
+| 4.8 | Airplane mode, repeat 4.2 | Care guide still loads (offline) | |
+| 4.9 | Dark mode + large font on the care guide | Readable, nothing clipped, page scrolls | |
+| 4.10 | TalkBack on the care guide | Section titles are read as headings; values and notes are read | |

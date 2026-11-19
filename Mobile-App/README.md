@@ -5,11 +5,11 @@ plant, see the identification result, read its care guide, and revisit past
 identifications. All processing is meant to happen on the device, and the app
 does not need an account.
 
-> **Current status: Sprint 3 (mock identification).** You can take or choose a
-> photo, preview it and run a **demo** identification that shows each result
-> type: identified, uncertain, unsupported and error. All results come from a
-> clearly labelled mock: **no real model is connected** (Sprint 7). Care guide
-> (Sprint 4) and saved history (Sprint 5) are not built yet.
+> **Current status: Sprint 4 (care guide).** You can take or choose a photo,
+> run a **demo** identification and open the care guide for the identified plant.
+> Care guides come from the bundled plant data for the 7 supported plants. All
+> identification results still come from a clearly labelled mock: **no real
+> model is connected** (Sprint 7). Saved history arrives in Sprint 5.
 
 ## Requirements
 
@@ -57,7 +57,9 @@ PlantIdApplication.kt      # owns the AppContainer
 MainActivity.kt            # sets the theme and PlantIdApp
 di/AppContainer.kt         # manual dependency container
 domain/identification/     # IdentificationService contract and outcome types
+domain/plant/              # Plant, PlantRepository, CareRecommendations (rule-based care tips)
 data/image/                # PhotoStore: private copy of the selected photo
+data/plant/                # reads the bundled assets/plants.json
 data/identification/mock/  # DEMO-only mock identifier, demo scenarios, fictional plants
 ui/
 ├── PlantIdApp.kt          # app shell: bottom bar, navigation host, photo selection
@@ -65,11 +67,32 @@ ui/
 ├── theme/                 # colours, typography, shapes, Spacing/Sizes tokens
 ├── components/            # buttons, cards, status message, loading/empty/error states, branding
 ├── identify/              # photo source sheet, preview, demo mode picker, identifying + result screens
+├── care/                  # care guide screen
 ├── home/  history/  about/   # one package per screen
 ```
 
-Planned additions: plant and care content (Sprint 4), local history
-(Sprint 5), the real on-device identifier (Sprint 7).
+Planned additions: local history (Sprint 5), the real on-device identifier
+(Sprint 7).
+
+### Plant data and care guides
+
+- `app/src/main/assets/plants.json` holds the 7 supported plants (names,
+  family, classifier class label, care values) and the source and licence. It
+  is **generated**: don't edit it by hand.
+- After the AI team changes `species_map.json` or `care_tips.json` (for example,
+  adding species), regenerate it from the repository root and commit the result:
+
+  ```bash
+  python Mobile-App/tools/sync_plant_data.py
+  ```
+
+  `PlantDataSyncTest` (unit tests) fails if the asset is out of date.
+- Care tips are **rule-based**: `CareRecommendations` keeps only plausible
+  values that exist in the source, and the screen words them with fixed
+  templates in `strings.xml`. No advice is generated or invented, and toxicity
+  data is never copied into the app (DECISIONS D20).
+- Source: FloraDB houseplant care sample, **CC BY-NC 4.0** (non-commercial,
+  attribution required). It is credited in the app.
 
 ### Photos and permissions
 
@@ -97,8 +120,9 @@ model is integrated, `MockIdentificationService` is the only implementation:
   returns the outcome chosen in the preview's **Demo mode** card: identified,
   identified with missing details, not confident, no supported plant, error,
   or slow (about 6 s).
-- Its plants are **fictional** ("Demo Plant A"). It returns no scores and no
-  plant facts.
+- *Identified* always returns the same supported plant (Golden Pothos) from the
+  plant data, so the care guide can be shown. *Missing details* returns a
+  fictional plant ("Demo Plant B") that has no care guide. It returns no scores.
 - Every result it produces shows a **Demo result** banner. Never present these
   results as real predictions or use them as model-accuracy data.
 
