@@ -5,7 +5,10 @@ import io.github.ephym6.plantid.domain.identification.IdentificationOutcome
 import io.github.ephym6.plantid.domain.identification.IdentificationService
 import io.github.ephym6.plantid.domain.identification.ModelInfo
 import io.github.ephym6.plantid.domain.identification.PlantSummary
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,8 +17,8 @@ import java.io.File
 /**
  * DEMO ONLY. Returns a predictable outcome for the selected [DemoScenario]
  * after a short fixed delay, so the UI flow can be built and tested before the
- * real model exists (spec §8.1). It does **not** look at the photo, and its
- * results are not predictions. [modelInfo] is marked `isDemo` so the UI labels
+ * real model exists (spec §8.1). It does **not** analyse the photo (it only
+ * checks the file still exists), and its results are not predictions. [modelInfo] is marked `isDemo` so the UI labels
  * every result as demo output.
  *
  * The plants it returns are fictional ([DemoPlants]). No real species,
@@ -24,6 +27,7 @@ import java.io.File
 class MockIdentificationService(
     private val responseDelayMillis: Long = DEFAULT_DELAY_MILLIS,
     private val slowDelayMillis: Long = SLOW_DELAY_MILLIS,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : IdentificationService, DemoScenarioController {
 
     override val modelInfo = ModelInfo(name = "PlantID demo identifier", version = null, isDemo = true)
@@ -39,6 +43,10 @@ class MockIdentificationService(
         // Read once at the start so a change mid-request can't mix scenarios.
         val scenario = _scenario.value
         delay(if (scenario == DemoScenario.Slow) slowDelayMillis else responseDelayMillis)
+        // Behave like a real identifier if the photo has gone (e.g. cache cleared).
+        if (!withContext(ioDispatcher) { photo.isFile }) {
+            return IdentificationOutcome.Failed(modelInfo, FailureReason.PhotoUnavailable)
+        }
         return when (scenario) {
             DemoScenario.Identified, DemoScenario.Slow ->
                 IdentificationOutcome.Identified(modelInfo, DemoPlants.CLASS_A, DemoPlants.complete)
