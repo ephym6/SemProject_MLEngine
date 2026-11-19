@@ -10,15 +10,18 @@ import io.github.ephym6.plantid.R
 import io.github.ephym6.plantid.ui.components.CenteredScrollableColumn
 import io.github.ephym6.plantid.ui.components.EmptyState
 import io.github.ephym6.plantid.ui.components.PlantIdTopAppBar
+import io.github.ephym6.plantid.ui.components.PrimaryButton
 import io.github.ephym6.plantid.ui.theme.PlantIDTheme
 
 /**
- * History (Sprint 1 placeholder): always shows the empty state. Saved records
- * arrive in Sprint 5. The "Identify a plant" action is added once that flow
- * exists (Sprint 2).
+ * History (placeholder until Sprint 5): always shows the empty state, which
+ * offers to start an identification.
  */
 @Composable
-fun HistoryScreen(modifier: Modifier = Modifier) {
+fun HistoryScreen(
+    onIdentifyPlant: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Scaffold(
         modifier = modifier,
         topBar = { PlantIdTopAppBar(title = stringResource(R.string.history_title)) },
@@ -28,6 +31,13 @@ fun HistoryScreen(modifier: Modifier = Modifier) {
                 iconRes = R.drawable.ic_history,
                 title = stringResource(R.string.history_empty_title),
                 message = stringResource(R.string.history_empty_message),
+                action = {
+                    PrimaryButton(
+                        text = stringResource(R.string.action_identify_plant),
+                        onClick = onIdentifyPlant,
+                        iconRes = R.drawable.ic_photo_camera,
+                    )
+                },
             )
         }
     }
@@ -36,5 +46,5 @@ fun HistoryScreen(modifier: Modifier = Modifier) {
 @PreviewLightDark
 @Composable
 private fun HistoryScreenPreview() {
-    PlantIDTheme { HistoryScreen() }
+    PlantIDTheme { HistoryScreen(onIdentifyPlant = {}) }
 }

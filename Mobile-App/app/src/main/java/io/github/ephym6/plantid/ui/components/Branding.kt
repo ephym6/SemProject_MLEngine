@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -82,13 +83,24 @@ fun PlantIdTopAppBar(
     )
 }
 
+/** Standard Up/Back button for [PlantIdTopAppBar]'s navigationIcon. */
+@Composable
+fun BackNavigationButton(onClick: () -> Unit) {
+    IconButton(onClick = onClick) {
+        Icon(
+            painter = painterResource(R.drawable.ic_arrow_back),
+            contentDescription = stringResource(R.string.action_back),
+        )
+    }
+}
+
 @PreviewLightDark
 @Composable
 private fun BrandingPreview() {
     PlantIDTheme {
         Surface {
             Column {
-                PlantIdTopAppBar(title = "Screen title")
+                PlantIdTopAppBar(title = "Screen title", navigationIcon = { BackNavigationButton(onClick = {}) })
                 BrandHeader(modifier = Modifier.padding(Spacing.lg))
             }
         }

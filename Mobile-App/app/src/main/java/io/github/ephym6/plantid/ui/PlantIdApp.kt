@@ -11,34 +11,45 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import io.github.ephym6.plantid.PlantIdApplication
+import io.github.ephym6.plantid.ui.identify.PhotoSelectionHost
+import io.github.ephym6.plantid.ui.identify.PhotoSelectionViewModel
 import io.github.ephym6.plantid.ui.navigation.PlantIdNavHost
 import io.github.ephym6.plantid.ui.navigation.TopLevelDestination
 import io.github.ephym6.plantid.ui.navigation.isTopLevel
+import io.github.ephym6.plantid.ui.navigation.navigateToPhotoPreview
 import io.github.ephym6.plantid.ui.navigation.navigateToTopLevel
-import io.github.ephym6.plantid.ui.theme.PlantIDTheme
 
 /**
- * App shell: bottom navigation for top-level destinations plus the navigation host.
+ * App shell: bottom navigation for top-level destinations, the navigation
+ * host, and the app-wide photo selection flow.
  *
  * Insets: this outer Scaffold only reserves space for the bottom bar (which
  * handles the system navigation bar itself). Each screen's own Scaffold handles
  * the status bar, so top bars can draw edge-to-edge without double padding.
+ *
+ * Needs the real [PlantIdApplication], so it has no Compose preview; preview
+ * the individual screens instead.
  */
 @Composable
 fun PlantIdApp(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
+    // Scoped to the activity, so the flow survives navigation between screens.
+    photoSelection: PhotoSelectionViewModel = viewModel(factory = PhotoSelectionViewModel.Factory),
 ) {
+    val container = (LocalContext.current.applicationContext as PlantIdApplication).container
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
-    // The bar is hidden on non-tab screens (the identification flow, from Sprint 2).
+    // The bar is hidden on non-tab screens, such as the photo preview.
     val showBottomBar = currentDestination == null ||
         TopLevelDestination.entries.any { currentDestination.isTopLevel(it) }
 
@@ -56,11 +67,18 @@ fun PlantIdApp(
     ) { innerPadding ->
         PlantIdNavHost(
             navController = navController,
+            onIdentifyPlant = photoSelection::openSourceChooser,
+            photoFileFor = container.photoStore::fileFor,
             modifier = Modifier
                 .padding(innerPadding)
                 .consumeWindowInsets(innerPadding),
         )
     }
+
+    PhotoSelectionHost(
+        viewModel = photoSelection,
+        onPhotoReady = navController::navigateToPhotoPreview,
+    )
 }
 
 @Composable
@@ -78,13 +96,5 @@ private fun PlantIdBottomBar(
                 label = { Text(stringResource(destination.labelRes)) },
             )
         }
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun PlantIdAppPreview() {
-    PlantIDTheme {
-        PlantIdApp()
     }
 }
