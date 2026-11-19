@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">PlantID</string>
+
+    <!-- Shared components -->
+    <string name="status_info">Information</string>
+    <string name="status_success">Success</string>
+    <string name="status_warning">Warning</string>
+    <string name="status_error">Error</string>
+    <string name="action_try_again">Try again</string>
 </resources>
