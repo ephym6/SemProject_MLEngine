@@ -87,9 +87,41 @@
     <string name="result_failed_timed_out">Analyzing your photo took too long. Please try again.</string>
     <string name="result_failed_model">Plant identification isn\'t available right now. Please try again.</string>
     <string name="result_failed_photo">Your photo is no longer available. Choose another photo to continue.</string>
+    <string name="action_view_care_guide">View care guide</string>
     <string name="action_identify_another">Identify another plant</string>
     <string name="action_try_another_photo">Try another photo</string>
     <string name="action_back_to_home">Back to home</string>
+
+    <!-- Care guide. Reviewed templates filled only with source values (DECISIONS D20).
+         Never add advice here that isn't backed by the source data. -->
+    <string name="care_title">Care guide</string>
+    <string name="care_loading">Loading care guide…</string>
+    <string name="care_family">Plant family: %1$s</string>
+    <string name="care_general_title">General guidance</string>
+    <string name="care_general_message">These values come from the source below. Your plant\'s needs vary with light, warmth and pot size, and following them can\'t guarantee a healthy plant.</string>
+    <string name="care_light_title">Light</string>
+    <string name="care_light_range">%1$s–%2$s lux</string>
+    <string name="care_light_single">About %1$s lux</string>
+    <string name="care_light_note">Lux measures how bright the light is where the plant sits.</string>
+    <string name="care_watering_title">Watering</string>
+    <plurals name="care_watering_interval">
+        <item quantity="one">About every %d day</item>
+        <item quantity="other">About every %d days</item>
+    </plurals>
+    <string name="care_watering_note">This is the typical interval in the source, not a fixed schedule. How often your plant needs water varies with its conditions.</string>
+    <string name="care_temperature_title">Temperature</string>
+    <string name="care_temperature_range">%1$d–%2$d °C</string>
+    <string name="care_temperature_single">About %1$d °C</string>
+    <string name="care_temperature_note">Temperature range listed for this plant in the source.</string>
+    <string name="care_humidity_title">Humidity</string>
+    <string name="care_humidity_value">Around %1$d%%</string>
+    <string name="care_humidity_note">Ideal relative humidity listed for this plant in the source.</string>
+    <string name="care_source_title">Source</string>
+    <string name="care_source_with_license">%1$s. License: %2$s.</string>
+    <string name="care_none_title">No care guide available</string>
+    <string name="care_none_message">PlantID doesn\'t have care information for this plant yet.</string>
+    <string name="care_error_title">Care guide unavailable</string>
+    <string name="care_error_message">The care information couldn\'t be loaded. Please try again.</string>
 
     <!-- History -->
     <string name="history_title">History</string>
@@ -103,7 +135,13 @@
     <string name="about_prototype_title">Research prototype</string>
     <string name="about_prototype_body">PlantID is being built for an academic research project. It supports a limited set of plants, and its results are not a guarantee.</string>
     <string name="about_supported_title">Supported plants</string>
-    <string name="about_supported_body">The list of supported plants will appear here once the project team has confirmed it.</string>
+    <plurals name="about_supported_intro">
+        <item quantity="one">PlantID can identify %d plant. It can\'t identify other plants.</item>
+        <item quantity="other">PlantID can identify these %d plants. It can\'t identify other plants.</item>
+    </plurals>
+    <string name="about_supported_unavailable">The list of supported plants couldn\'t be loaded.</string>
+    <string name="about_sources_title">Care information</string>
+    <string name="about_sources_body">Care guides use values from %1$s (%2$s). Toxicity information from the source is not shown.</string>
     <string name="about_privacy_title">Privacy</string>
     <string name="about_privacy_body">PlantID does not need an account and does not use the internet. When you take or choose a photo, PlantID keeps a temporary copy on this device so it can show it to you. Only the most recent photo is kept, and nothing is uploaded. Photos you take in PlantID are not added to your gallery.</string>
     <string name="about_version">Version %1$s</string>

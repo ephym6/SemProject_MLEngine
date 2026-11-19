@@ -2,6 +2,11 @@ package io.github.ephym6.plantid.data.identification.mock
 
 import io.github.ephym6.plantid.domain.identification.FailureReason
 import io.github.ephym6.plantid.domain.identification.IdentificationOutcome
+import io.github.ephym6.plantid.domain.plant.ContentSource
+import io.github.ephym6.plantid.domain.plant.Plant
+import io.github.ephym6.plantid.domain.plant.PlantCatalog
+import io.github.ephym6.plantid.domain.plant.PlantRepository
+import io.github.ephym6.plantid.domain.plant.toSummary
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -15,11 +20,25 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
+import java.io.IOException
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MockIdentificationServiceTest {
 
     private val photo: File = File.createTempFile("mock_test_", ".jpg")
+    private val pothos = Plant(
+        id = "epipremnum_aureum",
+        classLabel = MockIdentificationService.DEMO_CLASS_LABEL,
+        commonName = "Golden Pothos",
+        scientificName = "Epipremnum aureum",
+        family = null,
+        care = null,
+    )
+    private var catalog: Result<PlantCatalog> =
+        Result.success(PlantCatalog(ContentSource("Test source", null, null), listOf(pothos)))
+    private val plants = object : PlantRepository {
+        override suspend fun catalog() = catalog
+    }
 
     @After
     fun tearDown() {
@@ -27,7 +46,7 @@ class MockIdentificationServiceTest {
     }
 
     private fun TestScope.newService() =
-        MockIdentificationService(ioDispatcher = StandardTestDispatcher(testScheduler))
+        MockIdentificationService(plants, ioDispatcher = StandardTestDispatcher(testScheduler))
 
     private fun TestScope.identifyWith(scenario: DemoScenario): IdentificationOutcome {
         val service = newService()
@@ -46,18 +65,28 @@ class MockIdentificationServiceTest {
     }
 
     @Test
-    fun `default scenario is a complete fictional identification without scores`() = runTest {
+    fun `default scenario identifies the demo plant from the catalog without scores`() = runTest {
         val outcome = identifyWith(newService().scenario.value) as IdentificationOutcome.Identified
 
-        assertEquals(DemoPlants.complete, outcome.plant)
-        assertEquals(DemoPlants.CLASS_A, outcome.classId)
+        assertEquals(pothos.toSummary(), outcome.plant)
+        assertEquals(MockIdentificationService.DEMO_CLASS_LABEL, outcome.classId)
         assertTrue("mock must not invent scores", outcome.scores.isEmpty())
     }
 
     @Test
-    fun `missing details scenario has only a common name`() = runTest {
+    fun `identified fails rather than inventing a plant when the catalog can't be read`() = runTest {
+        catalog = Result.failure(IOException("broken asset"))
+
+        val outcome = identifyWith(DemoScenario.Identified)
+
+        assertEquals(FailureReason.ProcessingFailed, (outcome as IdentificationOutcome.Failed).reason)
+    }
+
+    @Test
+    fun `missing details scenario is a fictional plant with only a common name`() = runTest {
         val outcome = identifyWith(DemoScenario.MissingDetails) as IdentificationOutcome.Identified
 
+        assertEquals(DemoPlants.unlisted, outcome.plant)
         assertEquals("Demo Plant B", outcome.plant.commonName)
         assertNull(outcome.plant.scientificName)
         assertNull(outcome.plant.description)

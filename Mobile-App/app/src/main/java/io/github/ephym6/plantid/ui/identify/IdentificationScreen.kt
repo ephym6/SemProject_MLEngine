@@ -24,7 +24,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import io.github.ephym6.plantid.R
-import io.github.ephym6.plantid.data.identification.mock.DemoPlants
 import io.github.ephym6.plantid.domain.identification.FailureReason
 import io.github.ephym6.plantid.domain.identification.IdentificationOutcome
 import io.github.ephym6.plantid.domain.identification.ModelInfo
@@ -55,8 +54,8 @@ import java.io.File
  * - Failed: error panel with Try again where retrying can help.
  * Demo results always carry a "Demo result" banner.
  *
- * Care guide and Save are added in Sprints 4 and 5. They aren't shown as
- * buttons that do nothing.
+ * Identified results offer the care guide. Save arrives with history (Sprint 5)
+ * and isn't shown as a button that does nothing.
  */
 @Composable
 fun IdentificationScreen(
@@ -66,6 +65,7 @@ fun IdentificationScreen(
     onRetry: () -> Unit,
     onIdentifyAnother: () -> Unit,
     onBackToHome: () -> Unit,
+    onViewCareGuide: (plantId: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -87,6 +87,7 @@ fun IdentificationScreen(
                 onRetry = onRetry,
                 onIdentifyAnother = onIdentifyAnother,
                 onBackToHome = onBackToHome,
+                onViewCareGuide = onViewCareGuide,
                 modifier = Modifier.padding(padding),
             )
         }
@@ -115,6 +116,7 @@ private fun ResultContent(
     onRetry: () -> Unit,
     onIdentifyAnother: () -> Unit,
     onBackToHome: () -> Unit,
+    onViewCareGuide: (plantId: String) -> Unit,
     modifier: Modifier,
 ) {
     Column(
@@ -147,19 +149,28 @@ private fun ResultContent(
             )
             is IdentificationOutcome.Failed -> FailedContent(outcome.reason, onRetry, onIdentifyAnother, onBackToHome)
         }
-        if (outcome !is IdentificationOutcome.Failed) {
+        if (outcome is IdentificationOutcome.Identified) {
             PrimaryButton(
-                text = stringResource(
-                    if (outcome is IdentificationOutcome.Identified) {
-                        R.string.action_identify_another
-                    } else {
-                        R.string.action_try_another_photo
-                    },
-                ),
+                text = stringResource(R.string.action_view_care_guide),
+                onClick = { onViewCareGuide(outcome.plant.plantId) },
+                iconRes = R.drawable.ic_menu_book,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            SecondaryButton(
+                text = stringResource(R.string.action_identify_another),
                 onClick = onIdentifyAnother,
                 iconRes = R.drawable.ic_photo_camera,
                 modifier = Modifier.fillMaxWidth(),
             )
+        } else if (outcome !is IdentificationOutcome.Failed) {
+            PrimaryButton(
+                text = stringResource(R.string.action_try_another_photo),
+                onClick = onIdentifyAnother,
+                iconRes = R.drawable.ic_photo_camera,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        if (outcome !is IdentificationOutcome.Failed) {
             SecondaryButton(
                 text = stringResource(R.string.action_back_to_home),
                 onClick = onBackToHome,
@@ -261,6 +272,8 @@ private val THUMBNAIL_MAX_WIDTH = 200.dp
 // ---- Previews (fictional demo data, no photo) ----
 
 private val previewModel = ModelInfo(name = "Preview", version = null, isDemo = true)
+private val previewPlant = PlantSummary("preview_plant", "Preview Plant", "Preview species (fictional)", "Preview description.")
+private val previewPlantMinimal = PlantSummary("preview_minimal", "Preview Plant", null, null)
 
 @Composable
 private fun ResultPreview(state: UiState) {
@@ -272,6 +285,7 @@ private fun ResultPreview(state: UiState) {
             onRetry = {},
             onIdentifyAnother = {},
             onBackToHome = {},
+            onViewCareGuide = {},
         )
     }
 }
@@ -283,13 +297,13 @@ private fun IdentifyingPreview() = ResultPreview(UiState.Identifying)
 @PreviewLightDark
 @Composable
 private fun IdentifiedPreview() = ResultPreview(
-    UiState.Finished(IdentificationOutcome.Identified(previewModel, DemoPlants.CLASS_A, DemoPlants.complete)),
+    UiState.Finished(IdentificationOutcome.Identified(previewModel, "preview_class", previewPlant)),
 )
 
 @PreviewLightDark
 @Composable
 private fun IdentifiedMissingDetailsPreview() = ResultPreview(
-    UiState.Finished(IdentificationOutcome.Identified(previewModel, DemoPlants.CLASS_B, DemoPlants.minimal)),
+    UiState.Finished(IdentificationOutcome.Identified(previewModel, "preview_class", previewPlantMinimal)),
 )
 
 @PreviewLightDark

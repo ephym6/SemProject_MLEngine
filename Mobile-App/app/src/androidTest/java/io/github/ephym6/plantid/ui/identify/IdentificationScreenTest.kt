@@ -9,10 +9,10 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.ephym6.plantid.R
-import io.github.ephym6.plantid.data.identification.mock.DemoPlants
 import io.github.ephym6.plantid.domain.identification.FailureReason
 import io.github.ephym6.plantid.domain.identification.IdentificationOutcome
 import io.github.ephym6.plantid.domain.identification.ModelInfo
+import io.github.ephym6.plantid.domain.identification.PlantSummary
 import io.github.ephym6.plantid.ui.identify.IdentificationViewModel.UiState
 import io.github.ephym6.plantid.ui.theme.PlantIDTheme
 import org.junit.Assert.assertEquals
@@ -30,7 +30,11 @@ class IdentificationScreenTest {
     private val demo = ModelInfo(name = "Demo", version = null, isDemo = true)
     private val real = ModelInfo(name = "Real", version = "1", isDemo = false)
 
+    private val complete = PlantSummary("plant_a", "Test Plant A", "Test species (fictional)", "Test description.")
+    private val minimal = PlantSummary("plant_b", "Test Plant B", null, null)
+
     private var retries = 0
+    private var careGuideFor: String? = null
     private var identifyAnother = 0
     private var backToHome = 0
 
@@ -46,13 +50,14 @@ class IdentificationScreenTest {
                     onRetry = { retries++ },
                     onIdentifyAnother = { identifyAnother++ },
                     onBackToHome = { backToHome++ },
+                    onViewCareGuide = { careGuideFor = it },
                 )
             }
         }
     }
 
     private fun assertNoDemoPlantShown() {
-        listOf(DemoPlants.complete, DemoPlants.minimal).forEach { plant ->
+        listOf(complete, minimal).forEach { plant ->
             composeRule.onNodeWithText(plant.commonName!!).assertDoesNotExist()
         }
     }
@@ -65,24 +70,28 @@ class IdentificationScreenTest {
 
     @Test
     fun identifiedShowsPlantNameAndIsLabelledDemo() {
-        show(UiState.Finished(IdentificationOutcome.Identified(demo, DemoPlants.CLASS_A, DemoPlants.complete)))
+        show(UiState.Finished(IdentificationOutcome.Identified(demo, "class_a", complete)))
 
         composeRule.onNodeWithText(str(R.string.demo_banner_title)).assertIsDisplayed()
-        composeRule.onNodeWithText(DemoPlants.complete.commonName!!).performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithText(DemoPlants.complete.scientificName!!).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText(complete.commonName!!).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText(complete.scientificName!!).performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText(str(R.string.result_identified_title)).performScrollTo().assertIsDisplayed()
 
+        composeRule.onNodeWithText(str(R.string.result_description_title)).performScrollTo().assertIsDisplayed()
+
+        composeRule.onNodeWithText(str(R.string.action_view_care_guide)).performScrollTo().performClick()
         composeRule.onNodeWithText(str(R.string.action_identify_another)).performScrollTo().performClick()
         composeRule.onNodeWithText(str(R.string.action_back_to_home)).performScrollTo().performClick()
+        assertEquals("plant_a", careGuideFor)
         assertEquals(1, identifyAnother)
         assertEquals(1, backToHome)
     }
 
     @Test
     fun identifiedWithMissingDetailsStillWorks() {
-        show(UiState.Finished(IdentificationOutcome.Identified(demo, DemoPlants.CLASS_B, DemoPlants.minimal)))
+        show(UiState.Finished(IdentificationOutcome.Identified(demo, "class_b", minimal)))
 
-        composeRule.onNodeWithText(DemoPlants.minimal.commonName!!).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText(minimal.commonName!!).performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText(str(R.string.result_description_title)).assertDoesNotExist()
         composeRule.onNodeWithText(str(R.string.action_identify_another)).performScrollTo().assertIsDisplayed()
     }
@@ -91,6 +100,7 @@ class IdentificationScreenTest {
     fun uncertainNeverShowsASpeciesName() {
         show(UiState.Finished(IdentificationOutcome.Uncertain(demo)))
 
+        composeRule.onNodeWithText(str(R.string.action_view_care_guide)).assertDoesNotExist()
         composeRule.onNodeWithText(str(R.string.result_uncertain_title)).performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText(str(R.string.result_identified_title)).assertDoesNotExist()
         assertNoDemoPlantShown()

@@ -2,6 +2,7 @@ package io.github.ephym6.plantid.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -16,7 +17,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import io.github.ephym6.plantid.BuildConfig
 import io.github.ephym6.plantid.di.AppContainer
+import io.github.ephym6.plantid.domain.plant.PlantCatalog
 import io.github.ephym6.plantid.ui.about.AboutScreen
+import io.github.ephym6.plantid.ui.care.CareGuideScreen
+import io.github.ephym6.plantid.ui.care.CareGuideViewModel
 import io.github.ephym6.plantid.ui.history.HistoryScreen
 import io.github.ephym6.plantid.ui.home.HomeScreen
 import io.github.ephym6.plantid.ui.identify.IdentificationScreen
@@ -52,7 +56,10 @@ fun PlantIdNavHost(
             HistoryScreen(onIdentifyPlant = onIdentifyPlant)
         }
         composable<AboutRoute> {
-            AboutScreen(versionName = BuildConfig.VERSION_NAME)
+            val catalog by produceState<Result<PlantCatalog>?>(initialValue = null) {
+                value = container.plantRepository.catalog()
+            }
+            AboutScreen(versionName = BuildConfig.VERSION_NAME, catalog = catalog)
         }
         composable<PhotoPreviewRoute> { entry ->
             val photoId = entry.toRoute<PhotoPreviewRoute>().photoId
@@ -81,6 +88,19 @@ fun PlantIdNavHost(
                 onRetry = viewModel::retry,
                 onIdentifyAnother = onIdentifyPlant,
                 onBackToHome = { navController.popBackStack<HomeRoute>(inclusive = false) },
+                onViewCareGuide = { plantId -> navController.navigate(CareGuideRoute(plantId)) { launchSingleTop = true } },
+            )
+        }
+        composable<CareGuideRoute> { entry ->
+            val plantId = entry.toRoute<CareGuideRoute>().plantId
+            val viewModel: CareGuideViewModel = viewModel(
+                factory = CareGuideViewModel.factory(plantId, container.plantRepository),
+            )
+            val state by viewModel.uiState.collectAsStateWithLifecycle()
+            CareGuideScreen(
+                state = state,
+                onBack = { navController.popBackStack() },
+                onRetry = viewModel::retry,
             )
         }
     }

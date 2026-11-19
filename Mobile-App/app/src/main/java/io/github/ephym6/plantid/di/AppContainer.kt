@@ -5,7 +5,9 @@ import io.github.ephym6.plantid.data.identification.mock.DemoScenarioController
 import io.github.ephym6.plantid.data.identification.mock.MockIdentificationService
 import io.github.ephym6.plantid.data.image.CachePhotoStore
 import io.github.ephym6.plantid.data.image.PhotoStore
+import io.github.ephym6.plantid.data.plant.AssetPlantRepository
 import io.github.ephym6.plantid.domain.identification.IdentificationService
+import io.github.ephym6.plantid.domain.plant.PlantRepository
 
 /**
  * Manual dependency container (DECISIONS D5): one instance per app process,
@@ -17,8 +19,10 @@ class AppContainer(context: Context) {
 
     val photoStore: PhotoStore by lazy { CachePhotoStore(appContext) }
 
+    val plantRepository: PlantRepository by lazy { AssetPlantRepository(appContext) }
+
     // Until Sprint 7 the only identifier is the demo mock.
-    private val mockIdentification by lazy { MockIdentificationService() }
+    private val mockIdentification by lazy { MockIdentificationService(plantRepository) }
 
     val identificationService: IdentificationService get() = mockIdentification
 

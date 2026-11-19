@@ -25,6 +25,10 @@ data class PhotoPreviewRoute(val photoId: String)
 @Serializable
 data class IdentificationRoute(val photoId: String)
 
+/** Care guide for the catalog plant [plantId]. */
+@Serializable
+data class CareGuideRoute(val plantId: String)
+
 /** Destinations shown in the bottom navigation bar, in display order. */
 enum class TopLevelDestination(
     val route: Any,
