@@ -17,6 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import io.github.ephym6.plantid.R
 import io.github.ephym6.plantid.ui.components.BrandHeader
+import io.github.ephym6.plantid.ui.components.PrimaryButton
 import io.github.ephym6.plantid.ui.components.SecondaryButton
 import io.github.ephym6.plantid.ui.components.StatusMessage
 import io.github.ephym6.plantid.ui.components.StatusTone
@@ -25,12 +26,12 @@ import io.github.ephym6.plantid.ui.theme.PlantIDTheme
 import io.github.ephym6.plantid.ui.theme.Spacing
 
 /**
- * Home (Sprint 1 placeholder). The "Identify a plant" action and recent
- * identifications arrive in Sprint 2 and Sprint 5. Until then there is no
- * button that does nothing.
+ * Home: introduction and the main "Identify a plant" action. Recent
+ * identifications are added with history (Sprint 5).
  */
 @Composable
 fun HomeScreen(
+    onIdentifyPlant: () -> Unit,
     onOpenHistory: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -48,6 +49,12 @@ fun HomeScreen(
                 text = stringResource(R.string.home_tagline),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            PrimaryButton(
+                text = stringResource(R.string.action_identify_plant),
+                onClick = onIdentifyPlant,
+                iconRes = R.drawable.ic_photo_camera,
+                modifier = Modifier.fillMaxWidth(),
             )
             StatusMessage(
                 tone = StatusTone.Info,
@@ -71,11 +78,11 @@ fun HomeScreen(
 @PreviewLightDark
 @Composable
 private fun HomeScreenPreview() {
-    PlantIDTheme { HomeScreen(onOpenHistory = {}) }
+    PlantIDTheme { HomeScreen(onIdentifyPlant = {}, onOpenHistory = {}) }
 }
 
 @Preview(name = "Large font", fontScale = 1.6f, widthDp = 320)
 @Composable
 private fun HomeScreenLargeFontPreview() {
-    PlantIDTheme { HomeScreen(onOpenHistory = {}) }
+    PlantIDTheme { HomeScreen(onIdentifyPlant = {}, onOpenHistory = {}) }
 }
