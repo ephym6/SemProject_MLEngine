@@ -18,9 +18,12 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import io.github.ephym6.plantid.testing.FakeHistoryRepository
 import java.io.File
+import java.time.Instant
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class IdentificationViewModelTest {
@@ -29,6 +32,16 @@ class IdentificationViewModelTest {
     private val photo = File("unused_by_fake.jpg")
     private val model = ModelInfo(name = "Fake", version = "test", isDemo = false)
     private val unsupported = IdentificationOutcome.Unsupported(model)
+    private val history = FakeHistoryRepository()
+    private val now = Instant.parse("2026-11-19T10:15:30Z")
+    private var nextId = 0
+    private fun newViewModel(service: IdentificationService) = IdentificationViewModel(
+        photo = photo,
+        service = service,
+        history = history,
+        clock = { now },
+        newEventId = { "event-${++nextId}" },
+    )
 
     @Before
     fun setUp() {
@@ -56,7 +69,7 @@ class IdentificationViewModelTest {
     @Test
     fun `starts identifying immediately and shows the service outcome`() = runTest(dispatcher) {
         val service = FakeService(model) { delay(500); unsupported }
-        val viewModel = IdentificationViewModel(photo, service)
+        val viewModel = IdentificationViewModel(photo, service, history)
 
         assertEquals(UiState.Identifying, viewModel.uiState.value)
         advanceUntilIdle()
@@ -68,7 +81,7 @@ class IdentificationViewModelTest {
     @Test
     fun `missing photo fails without calling the service`() = runTest(dispatcher) {
         val service = FakeService(model) { unsupported }
-        val viewModel = IdentificationViewModel(photo = null, service = service)
+        val viewModel = IdentificationViewModel(photo = null, service = service, history = history)
         advanceUntilIdle()
 
         assertEquals(failed(FailureReason.PhotoUnavailable), viewModel.uiState.value)
@@ -78,7 +91,7 @@ class IdentificationViewModelTest {
     @Test
     fun `an exception becomes a processing failure, not a crash or fake success`() = runTest(dispatcher) {
         val service = FakeService(model) { error("inference exploded") }
-        val viewModel = IdentificationViewModel(photo, service)
+        val viewModel = IdentificationViewModel(photo, service, history)
         advanceUntilIdle()
 
         assertEquals(failed(FailureReason.ProcessingFailed), viewModel.uiState.value)
@@ -87,7 +100,7 @@ class IdentificationViewModelTest {
     @Test
     fun `a request that never finishes times out`() = runTest(dispatcher) {
         val service = FakeService(model) { awaitCancellation() }
-        val viewModel = IdentificationViewModel(photo, service, timeoutMillis = 1_000)
+        val viewModel = IdentificationViewModel(photo, service, history, timeoutMillis = 1_000)
 
         advanceTimeBy(999)
         runCurrent()
@@ -101,7 +114,7 @@ class IdentificationViewModelTest {
     @Test
     fun `retry while identifying is ignored`() = runTest(dispatcher) {
         val service = FakeService(model) { delay(500); unsupported }
-        val viewModel = IdentificationViewModel(photo, service)
+        val viewModel = IdentificationViewModel(photo, service, history)
 
         viewModel.retry()
         viewModel.retry()
@@ -113,7 +126,7 @@ class IdentificationViewModelTest {
     @Test
     fun `retry after a failure runs again and can succeed`() = runTest(dispatcher) {
         val service = FakeService(model) { IdentificationOutcome.Failed(model, FailureReason.ProcessingFailed) }
-        val viewModel = IdentificationViewModel(photo, service)
+        val viewModel = IdentificationViewModel(photo, service, history)
         advanceUntilIdle()
 
         service.behaviour = { delay(100); unsupported }
@@ -123,5 +136,89 @@ class IdentificationViewModelTest {
 
         assertEquals(UiState.Finished(unsupported), viewModel.uiState.value)
         assertEquals(2, service.calls)
+    }
+
+    // ---- Saving to history ----
+
+    @Test
+    fun `a finished result can be saved, a failure can't`() = runTest(dispatcher) {
+        val viewModel = newViewModel(FakeService(model) { unsupported })
+        assertEquals(SaveState.NotSaveable, viewModel.saveState.value)
+        advanceUntilIdle()
+        assertEquals(SaveState.NotSaved, viewModel.saveState.value)
+
+        val failing = newViewModel(FakeService(model) { IdentificationOutcome.Failed(model, FailureReason.ProcessingFailed) })
+        advanceUntilIdle()
+        assertEquals(SaveState.NotSaveable, failing.saveState.value)
+        failing.save()
+        advanceUntilIdle()
+        assertTrue(history.savedEntries.isEmpty())
+    }
+
+    @Test
+    fun `saving stores this event once with its photo, outcome and time`() = runTest(dispatcher) {
+        val viewModel = newViewModel(FakeService(model) { unsupported })
+        advanceUntilIdle()
+
+        viewModel.save()
+        viewModel.save() // repeated tap while saving
+        assertEquals(SaveState.Saving, viewModel.saveState.value)
+        advanceUntilIdle()
+        viewModel.save() // tap after saved
+        advanceUntilIdle()
+
+        assertEquals(SaveState.Saved, viewModel.saveState.value)
+        val entry = history.savedEntries.single()
+        assertEquals("event-1", entry.id)
+        assertEquals(unsupported, entry.outcome)
+        assertEquals(photo, entry.photo)
+        assertEquals(now, entry.identifiedAt)
+        assertEquals(1, history.records.value.size)
+    }
+
+    @Test
+    fun `a failed save can be tried again`() = runTest(dispatcher) {
+        val viewModel = newViewModel(FakeService(model) { unsupported })
+        advanceUntilIdle()
+        history.failSave = true
+
+        viewModel.save()
+        advanceUntilIdle()
+        assertEquals(SaveState.Failed, viewModel.saveState.value)
+
+        history.failSave = false
+        viewModel.save()
+        advanceUntilIdle()
+        assertEquals(SaveState.Saved, viewModel.saveState.value)
+    }
+
+    @Test
+    fun `deleting the record elsewhere allows saving again`() = runTest(dispatcher) {
+        val viewModel = newViewModel(FakeService(model) { unsupported })
+        advanceUntilIdle()
+        viewModel.save()
+        advanceUntilIdle()
+
+        history.delete("event-1")
+        advanceUntilIdle()
+
+        assertEquals(SaveState.NotSaved, viewModel.saveState.value)
+    }
+
+    @Test
+    fun `retrying starts a new event with a new id`() = runTest(dispatcher) {
+        val viewModel = newViewModel(FakeService(model) { unsupported })
+        advanceUntilIdle()
+        viewModel.save()
+        advanceUntilIdle()
+
+        viewModel.retry()
+        assertEquals(SaveState.NotSaveable, viewModel.saveState.value)
+        advanceUntilIdle()
+        assertEquals("the new event isn't saved yet", SaveState.NotSaved, viewModel.saveState.value)
+
+        viewModel.save()
+        advanceUntilIdle()
+        assertEquals(listOf("event-1", "event-2"), history.savedEntries.map { it.id })
     }
 }
