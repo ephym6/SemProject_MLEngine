@@ -36,6 +36,10 @@ If a decision changes, mark the old one *superseded* and add a new entry.
 | D27 | 2026-11-19 | **History records are snapshots** (names, status, model info incl. demo flag, time) keyed by an event id, so saving is idempotent and old records don't change when plant data does. The care guide link uses `plantId` and shows the current curated content | Spec §6.9 |
 | D28 | 2026-11-19 | **Room 2.8.5 + KSP 2.3.14.** KSP 2.2.10-2.0.2 fails with AGP 9 built-in Kotlin; 2.3.x supports it. Schemas exported to `app/schemas/`: a schema change needs a version bump and a migration | Standard local database; migrations reviewable |
 | D29 | 2026-11-19 | **Roadmap:** finish and stabilise the interface (Sprint 6) with the demo identifier, then replace the demo with the trained model (Sprint 7). More species will be trained later: adding one needs the AI team's JSON updated and `sync_plant_data.py` rerun. No app code changes, because results map through the class label | Team plan |
+| D30 | 2026-11-20 | **Navigation actions run only while their screen is RESUMED** (`ifResumed` in `PlantIdNavHost`) | A tap during a transition can't pop or navigate twice (TEST_REPORT F1) |
+| D31 | 2026-11-20 | **Finished identification results survive process death** (outcome + event id + time in `SavedStateHandle`; outcome types `@Serializable`) | Same result after returning; saving stays idempotent (F2) |
+| D32 | 2026-11-20 | **Accessibility automation:** WCAG contrast unit test on theme tokens + a semantics checker (labels, ≥ 48 dp touch targets) in the layout stress test, instead of the ATF artifact (classpath conflict with Espresso). Manual TalkBack pass stays required | Automated regression checks without new app dependencies |
+| D33 | 2026-11-20 | **AI integration boundary documented** in `docs/AI_INTEGRATION.md` and guarded by `ArchitectureTest` (only `di/` may reference concrete implementations) | Sprint 7 swap stays confined to one new package + `AppContainer` |
 
 ### Planned dependencies (added only in the sprint that needs them)
 
@@ -60,3 +64,5 @@ If a decision changes, mark the old one *superseded* and add a new entry.
 | Q12 | **Plain-language light levels** | The care guide shows lux ranges with a short explanation. Mapping lux to words ("bright indirect light") needs a sourced reference table | Research lead | Sprint 6 |
 | Q13 | **Care data quality** | FloraDB is a *sample* dataset. Someone should review the 7 entries (e.g. Bougainvillea and Coleus are often outdoor plants) before the usability study | Research lead | Sprint 8 |
 | Q14 | **Plant descriptions** | The source has no overview text, so results show none. Add only from a reviewed source (see D20 upgrade path) | Research lead | Optional |
+| Q15 | **Kotlin upgrade** | Compiler 2.2.10 pins Coil, serialization-json, Compose BOM and forces KSP 2.3.x (TEST_REPORT K2). Upgrading would lift the pins but is a larger change | Team | Before or after Sprint 7 |
+| Q16 | **Release signing** | Release build compiles but needs a signing key (kept out of git) before it can be installed and tested | Team | Sprint 8 |
