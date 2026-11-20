@@ -1,7 +1,9 @@
 package io.github.ephym6.plantid.ui.identify
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -19,6 +21,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import java.io.File
 import java.time.Instant
 import java.util.UUID
@@ -35,11 +39,17 @@ import java.util.UUID
  *
  * Each finished outcome is one identification event with its own id and time.
  * "Saved" is read back from history, so it stays correct across rotation.
+ *
+ * The finished outcome and its event are kept in [savedState], so if Android
+ * stops the app in the background the same result comes back. It isn't
+ * re-identified (which could show a different result or allow saving the same
+ * photo twice).
  */
 class IdentificationViewModel(
     private val photo: File?,
     private val service: IdentificationService,
     private val history: HistoryRepository,
+    private val savedState: SavedStateHandle,
     private val timeoutMillis: Long = TIMEOUT_MILLIS,
     private val clock: () -> Instant = Instant::now,
     private val newEventId: () -> String = { UUID.randomUUID().toString() },
@@ -60,7 +70,15 @@ class IdentificationViewModel(
     private var savedObserver: Job? = null
 
     init {
-        identify()
+        val restored = restoreResult()
+        if (restored == null) {
+            identify()
+        } else {
+            _uiState.value = UiState.Finished(restored.outcome)
+            if (restored.eventId != null && restored.identifiedAtMillis != null) {
+                startEvent(restored.outcome, restored.eventId, Instant.ofEpochMilli(restored.identifiedAtMillis))
+            }
+        }
     }
 
     fun retry() {
@@ -85,15 +103,20 @@ class IdentificationViewModel(
         _saveState.value = SaveState.NotSaveable
         event = null
         savedObserver?.cancel()
+        savedState.remove<String>(KEY_RESULT)
         viewModelScope.launch {
             val outcome = runIdentification()
+            val saveable = historyStatusOf(outcome) != null
+            val eventId = if (saveable) newEventId() else null
+            val identifiedAt = clock()
+            storeResult(SavedResult(outcome, eventId, identifiedAt.toEpochMilli()))
             _uiState.value = UiState.Finished(outcome)
-            if (historyStatusOf(outcome) != null) startEvent(outcome)
+            if (eventId != null) startEvent(outcome, eventId, identifiedAt)
         }
     }
 
-    private fun startEvent(outcome: IdentificationOutcome) {
-        val entry = NewHistoryEntry(id = newEventId(), identifiedAt = clock(), outcome = outcome, photo = photo)
+    private fun startEvent(outcome: IdentificationOutcome, eventId: String, identifiedAt: Instant) {
+        val entry = NewHistoryEntry(id = eventId, identifiedAt = identifiedAt, outcome = outcome, photo = photo)
         event = entry
         _saveState.value = SaveState.NotSaved
         savedObserver = viewModelScope.launch {
@@ -125,6 +148,28 @@ class IdentificationViewModel(
 
     private fun failed(reason: FailureReason) = IdentificationOutcome.Failed(service.modelInfo, reason)
 
+    /** What is kept across process death. */
+    @Serializable
+    private data class SavedResult(
+        val outcome: IdentificationOutcome,
+        val eventId: String?,
+        val identifiedAtMillis: Long?,
+    )
+
+    private fun storeResult(result: SavedResult) {
+        savedState[KEY_RESULT] = json.encodeToString(SavedResult.serializer(), result)
+    }
+
+    /** Null if there is nothing saved or it can't be read (then we identify again). */
+    private fun restoreResult(): SavedResult? {
+        val text = savedState.get<String>(KEY_RESULT) ?: return null
+        return try {
+            json.decodeFromString(SavedResult.serializer(), text)
+        } catch (_: IllegalArgumentException) {
+            null
+        }
+    }
+
     companion object {
         /**
          * Safety net against an endless loading state. Provisional: set it from
@@ -132,11 +177,16 @@ class IdentificationViewModel(
          */
         const val TIMEOUT_MILLIS = 30_000L
 
+        internal const val KEY_RESULT = "identification_result"
+        private val json = Json { ignoreUnknownKeys = true }
+
         fun factory(
             photo: File?,
             service: IdentificationService,
             history: HistoryRepository,
         ): ViewModelProvider.Factory =
-            viewModelFactory { initializer { IdentificationViewModel(photo, service, history) } }
+            viewModelFactory {
+                initializer { IdentificationViewModel(photo, service, history, createSavedStateHandle()) }
+            }
     }
 }

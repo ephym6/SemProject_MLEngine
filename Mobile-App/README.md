@@ -5,11 +5,11 @@ plant, see the identification result, read its care guide, and revisit past
 identifications. All processing is meant to happen on the device, and the app
 does not need an account.
 
-> **Current status: Sprint 5 (local history).** The interface flow is in
-> place: take or choose a photo, run a **demo** identification, open the care
-> guide, save results to History, and revisit or delete them. All
-> identification results still come from a clearly labelled mock: **no real
-> model is connected yet** (Sprint 7, after interface hardening in Sprint 6).
+> **Current status: Sprint 6 (hardening) — interface ready for model
+> integration.** The full flow works with a clearly labelled **demo**
+> identifier: photo → preview → identify → result → care guide → save → History.
+> **No real model is connected yet** (Sprint 7, see `docs/AI_INTEGRATION.md`).
+> Test results and known issues: `docs/TEST_REPORT.md`.
 
 ## Requirements
 
@@ -145,3 +145,7 @@ model is integrated, `MockIdentificationService` is the only implementation:
   open questions with owners.
 - [`docs/MANUAL_TESTS.md`](docs/MANUAL_TESTS.md): on-device checks for flows
   automated tests can't drive (photo picker, camera).
+- [`docs/TEST_REPORT.md`](docs/TEST_REPORT.md): Sprint 6 test results, fixes and
+  known issues.
+- [`docs/AI_INTEGRATION.md`](docs/AI_INTEGRATION.md): what the trained model
+  must provide and where it plugs in (Sprint 7).

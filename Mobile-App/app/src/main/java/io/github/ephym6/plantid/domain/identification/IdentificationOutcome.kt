@@ -1,15 +1,22 @@
 package io.github.ephym6.plantid.domain.identification
 
+import kotlinx.serialization.Serializable
+
 /**
  * Product-level result of one identification attempt (spec §6.5 statuses).
  *
  * How raw model output maps to these statuses (thresholds, uncertainty policy)
  * is an AI-integration decision (DECISIONS Q2). The UI must not invent one.
+ *
+ * Serializable so a finished result survives Android stopping the app
+ * (restored as-is, not re-identified).
  */
+@Serializable
 sealed interface IdentificationOutcome {
     val model: ModelInfo
 
     /** A supported class passed the agreed decision rule. */
+    @Serializable
     data class Identified(
         override val model: ModelInfo,
         /** Classifier label, e.g. a training class folder name. */
@@ -23,17 +30,20 @@ sealed interface IdentificationOutcome {
      * The model returned something, but the decision rule says it is not
      * confident. Must never be displayed as a species identification.
      */
+    @Serializable
     data class Uncertain(
         override val model: ModelInfo,
         val scores: List<ClassScore> = emptyList(),
     ) : IdentificationOutcome
 
     /** No acceptable supported class: an unsupported plant, or not a plant at all. */
+    @Serializable
     data class Unsupported(
         override val model: ModelInfo,
     ) : IdentificationOutcome
 
     /** The photo couldn't be processed or inference failed. */
+    @Serializable
     data class Failed(
         override val model: ModelInfo,
         val reason: FailureReason,
@@ -41,8 +51,10 @@ sealed interface IdentificationOutcome {
 }
 
 /** A raw model score for one class. Not necessarily a calibrated probability. */
+@Serializable
 data class ClassScore(val classId: String, val score: Float)
 
+@Serializable
 enum class FailureReason {
     /** The stored photo is missing or couldn't be decoded. */
     PhotoUnavailable,
@@ -62,6 +74,7 @@ enum class FailureReason {
  * maps a plant record to curated content (spec §7.3, Sprint 4).
  * Optional fields may be missing and the UI must cope.
  */
+@Serializable
 data class PlantSummary(
     val plantId: String,
     val commonName: String?,

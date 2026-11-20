@@ -9,6 +9,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -131,6 +132,26 @@ class IdentificationFlowTest {
 
         Espresso.pressBack()
         composeRule.onNodeWithText(str(R.string.action_view_care_guide)).performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun doubleTappingBackOnlyLeavesOneScreen() {
+        identifyWith(DemoScenario.Identified)
+        composeRule.waitUntilExactlyOneExists(hasText(demoPlantName), 5_000)
+        composeRule.onNodeWithText(str(R.string.action_view_care_guide)).performScrollTo().performClick()
+        composeRule.waitUntilExactlyOneExists(hasText(str(R.string.care_watering_title)), 5_000)
+
+        // Pause the clock so both taps land before the exit animation runs.
+        composeRule.mainClock.autoAdvance = false
+        val back = composeRule.onNodeWithContentDescription(str(R.string.action_back))
+        back.performClick()
+        back.performClick()
+        composeRule.mainClock.autoAdvance = true
+        composeRule.waitForIdle()
+
+        // Still on the result, not popped further to the preview.
+        composeRule.onNodeWithText(str(R.string.action_view_care_guide)).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText(str(R.string.preview_title)).assertDoesNotExist()
     }
 
     @Test
