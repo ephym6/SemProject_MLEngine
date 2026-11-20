@@ -11,7 +11,7 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
-private val LightColorScheme = lightColorScheme(
+internal val LightColorScheme = lightColorScheme(
     primary = LeafGreen40,
     onPrimary = Color.White,
     primaryContainer = LeafGreen90,
@@ -48,7 +48,7 @@ private val LightColorScheme = lightColorScheme(
     surfaceContainerHighest = NeutralLightContainerHighest,
 )
 
-private val DarkColorScheme = darkColorScheme(
+internal val DarkColorScheme = darkColorScheme(
     primary = LeafGreen80,
     onPrimary = LeafGreen20,
     primaryContainer = LeafGreen30,
@@ -98,14 +98,14 @@ data class ExtendedColors(
     val onWarningContainer: Color,
 )
 
-private val LightExtendedColors = ExtendedColors(
+internal val LightExtendedColors = ExtendedColors(
     warning = Amber40,
     onWarning = Color.White,
     warningContainer = Amber90,
     onWarningContainer = Amber10,
 )
 
-private val DarkExtendedColors = ExtendedColors(
+internal val DarkExtendedColors = ExtendedColors(
     warning = Amber80,
     onWarning = Amber20,
     warningContainer = Amber30,

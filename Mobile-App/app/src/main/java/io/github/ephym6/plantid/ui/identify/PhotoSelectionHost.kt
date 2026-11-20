@@ -2,7 +2,6 @@ package io.github.ephym6.plantid.ui.identify
 
 import android.content.ActivityNotFoundException
 import android.content.pm.PackageManager
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -23,6 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.ephym6.plantid.R
 import io.github.ephym6.plantid.data.image.PhotoError
@@ -70,7 +70,7 @@ fun PhotoSelectionHost(
         val target = state.captureRequest ?: return@LaunchedEffect
         viewModel.onCaptureLaunched()
         try {
-            cameraLauncher.launch(Uri.parse(target.uri))
+            cameraLauncher.launch(target.uri.toUri())
         } catch (_: ActivityNotFoundException) {
             viewModel.onCameraUnavailable()
         }
