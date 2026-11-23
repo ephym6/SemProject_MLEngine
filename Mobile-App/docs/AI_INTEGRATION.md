@@ -36,8 +36,10 @@ implements it:
 - **`ModelInfo`** comes from the metadata: name `PlantID v1`, version
   `plantid_v1.tflite float16`, `isDemo = false`. It is stored with every saved
   result.
-- **Scores:** the top 3 calibrated probabilities are carried for diagnostics.
-  They are never shown as percentages.
+- **Scores:** the calibrated probability of every class is carried with the
+  outcome. The UI shows the answer's as **"Model confidence: X%"** and the
+  possible matches' percentages, with a note that they were measured on the ML
+  team's photos (D43). Saved results keep the confidence.
 
 ### Preprocessing (from `model_metadata.json`)
 
@@ -60,8 +62,8 @@ App mapping (DECISIONS D37):
 | Model answer | App outcome | UI |
 |---|---|---|
 | Top answer is `other_plant` | `Unsupported` | "No supported plant found", no names |
-| Top answer below threshold | `Uncertain` | "We couldn't confidently identify this plant" + **Possible matches (not confirmed)**: up to 3 guesses (never `other_plant`), no percentages, no care-guide links |
-| Otherwise | `Identified` | Plant name, care guide if available, save |
+| Top answer below threshold | `Uncertain` | "We couldn't confidently identify this plant" + **Possible matches (not confirmed)**: up to 3 guesses (never `other_plant`) with their %, no care-guide links |
+| Otherwise | `Identified` | Plant name, **model confidence %** (always at least the 72% threshold), care guide, save |
 
 The temperature and threshold are read from the metadata, so the ML team can
 retune them without app code changes.
