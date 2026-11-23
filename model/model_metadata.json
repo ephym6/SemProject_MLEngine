@@ -1,0 +1,101 @@
+{
+ "model_name": "PlantID v1",
+ "architecture": "mobilenet_v2",
+ "file": "plantid_v1.tflite",
+ "tflite_variant": "float16",
+ "file_size_mb": 4.59,
+ "input": {
+  "name": "image",
+  "shape": [
+   1,
+   224,
+   224,
+   3
+  ],
+  "dtype": "float32",
+  "color_order": "RGB",
+  "value_range": [
+   0,
+   255
+  ],
+  "preprocessing": [
+   "apply EXIF orientation",
+   "center-crop the largest square",
+   "resize to 224x224 (bilinear)",
+   "raw RGB 0-255 as float32, NO normalisation (done inside the model)"
+  ]
+ },
+ "output": {
+  "shape": [
+   1,
+   31
+  ],
+  "dtype": "float32",
+  "meaning": "softmax probabilities in labels.txt order"
+ },
+ "labels": [
+  "aloe_vera",
+  "anthurium",
+  "areca_palm",
+  "arrowhead_vine",
+  "basil",
+  "bougainvillea",
+  "canna_lily",
+  "chilli_pepper",
+  "coleus",
+  "corn_plant",
+  "croton",
+  "crown_of_thorns",
+  "dumb_cane",
+  "duranta",
+  "frangipani",
+  "golden_pothos",
+  "hibiscus",
+  "jade_plant",
+  "ming_aralia",
+  "mint",
+  "monstera",
+  "other_plant",
+  "peace_lily",
+  "periwinkle",
+  "rosemary",
+  "rubber_plant",
+  "snake_plant",
+  "spider_plant",
+  "tomato",
+  "weeping_fig",
+  "zz_plant"
+ ],
+ "other_plant_index": 21,
+ "unknown_handling": {
+  "temperature": 0.7,
+  "threshold": 0.72,
+  "rule": "p = softmax(log(probs)/temperature); if argmax(p)==other_plant_index or max(p)<threshold: 'not sure' (show top-3) else labels[argmax(p)]"
+ },
+ "test_metrics_keras": {
+  "accuracy": 0.8789184015314668,
+  "macro_precision": 0.8761763442283285,
+  "macro_recall": 0.8859552750506466,
+  "macro_f1": 0.8771295044880051,
+  "top3": 0.9597989949748744
+ },
+ "test_metrics_tflite": {
+  "accuracy": 0.8786791098348887,
+  "macro_precision": 0.8761665243548449,
+  "macro_recall": 0.8857163264246012,
+  "macro_f1": 0.8768553766586441,
+  "top3": 0.9600382866714525
+ },
+ "pillow_preprocessing_check": {
+  "agreement_with_tf_preprocessing": 0.992581957406078,
+  "test": {
+   "accuracy": 0.8798755683177794,
+   "macro_precision": 0.8777804679205261,
+   "macro_recall": 0.8869110695548283,
+   "macro_f1": 0.877870169639003,
+   "top3": 0.9597989949748744
+  }
+ },
+ "tensorflow": "2.21.0",
+ "quick_run": false
+}
