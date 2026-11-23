@@ -132,8 +132,8 @@ unless the research protocol says so.
 | # | Steps | Expected | Result |
 |---|---|---|---|
 | 7.1 | Any photo → preview | No Demo mode card; Home and results show no demo banners | |
-| 7.2 | Clear photo of a supported plant with care data (Golden pothos, Rubber plant, Weeping fig, Jade plant, Ming aralia, Coleus) | Correct name + scientific name; **View care guide** shows its care values | |
-| 7.3 | Clear photo of a supported plant without care data (e.g. Snake plant, Monstera, Aloe vera) | Correct name; care guide says "No care guide available" | |
+| 7.2 | Clear photo of a supported FloraDB plant (e.g. Golden pothos, Snake plant, Monstera) | Correct name; **View care guide** shows light category + lux, watering, temperature, humidity, pet safety and the FloraDB source (CC BY-NC 4.0) | |
+| 7.3 | Clear photo of a plant with converted values (Basil, Mint, Rosemary, Tomato, Duranta…) | Care guide shows **Converted from gardening advice**, **What the source says**, and its NC State / Missouri Botanical Garden source | |
 | 7.4 | Blurry, dark or partial photo of a supported plant | Either identified, or "We couldn't confidently identify this plant" with **Possible matches (not confirmed)** (≤ 3 names, no percentages, no care links) | |
 | 7.5 | Photo of a plant that isn't one of the 30 | "No supported plant found", or "not sure" with guesses. Note which | |
 | 7.6 | Photo of something that isn't a plant (cup, wall, hand) | Not identified as a plant (ideally "No supported plant found"). Note what appears | |
@@ -143,3 +143,7 @@ unless the research protocol says so.
 | 7.10 | Save a real result, then open it from History | Shows model result (no Demo tag); care guide link if identified | |
 | 7.11 | Rotate during Analyzing; switch apps on the result (with *Don't keep activities*) | Not restarted; same result after returning | |
 | 7.12 | Run `ModelInferenceTest` and copy the timing line into `TEST_REPORT.md` | Recorded | |
+| 7.13 | Care guide of a toxic plant (e.g. Peace lily, Duranta) | **Pet safety** in warning style: toxic to dogs/cats, details, how it was established, source, and the "not veterinary advice" note | |
+| 7.14 | Care guide of Ming aralia and Crown of thorns | Pet safety says **inferred from related plants (genus), not confirmed**; Ming aralia shows the lower-confidence warning | |
+| 7.15 | Care guide of Bougainvillea and Peace lily | **Note from the PlantID team** explains the genus-level values | |
+| 7.16 | About tab | Credits list FloraDB (CC BY-NC 4.0), NC State Extension, Missouri Botanical Garden, UF/IFAS and ASPCA sources | |

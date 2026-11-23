@@ -17,7 +17,8 @@ packages it **directly as assets** (`app/build.gradle.kts`), with no copy in
 | `plantid_v1.tflite` | The model (stored uncompressed in the APK so it can be memory-mapped) |
 | `labels.txt` | Output order: index *i* is line *i* |
 | `model_metadata.json` | Input size, labels, `other_plant_index`, the "not sure" rule (temperature, threshold), model name and file |
-| `classes.json` | Common and scientific names per label. Used by `tools/sync_plant_data.py`, not at runtime |
+| `classes.json` | Common and scientific names per label |
+| `care_tips.json` | Care values, light category, confidence, sources and pet safety for all 30 species, keyed by label |
 
 The build stops with a clear message if `model/` is missing.
 
@@ -68,23 +69,23 @@ retune them without app code changes.
 ### Labels → plants
 
 ```
-output index i → labels.txt line i → plants.json plant with classLabel == label → name, care guide
+output index i → labels.txt line i → plant with that label (classes.json + care_tips.json) → name, care guide
 ```
 
-`plants.json` is generated from `model/classes.json` + `care_tips.json` by
-`tools/sync_plant_data.py`. Unit tests fail if any model label (except
-`other_plant`) has no plant, or if the asset is out of date.
+The catalog is built at runtime from `model/classes.json` and
+`model/care_tips.json` (`PlantDataParser`). Unit tests against the real files
+fail if any model label (except `other_plant`) has no plant, if a species lacks
+complete care values or pet safety, or if a cited source site has no name.
 
 ## 3. Updating the model (for example, more species)
 
 1. ML team: replace the files in `model/` (model, `labels.txt`, `classes.json`,
-   `model_metadata.json`) and, if available, add care values to `care_tips.json`.
-2. From the repository root: `python Mobile-App/tools/sync_plant_data.py`.
-3. `cd Mobile-App && ./gradlew testDebugUnitTest`. The sync and metadata tests
-   check consistency.
-4. Run `ModelInferenceTest` on a phone and record the timings
+   `model_metadata.json`, `care_tips.json`).
+2. `cd Mobile-App && ./gradlew testDebugUnitTest`. The parser and metadata
+   tests check that the files are consistent and that the app can read them.
+3. Run `ModelInferenceTest` on a phone and record the timings
    (`TEST_REPORT.md`).
-5. Commit `model/` changes and the regenerated `plants.json` together.
+4. Commit the `model/` changes. Nothing in `Mobile-App/` needs regenerating.
 
 If the input format, output layout or decision rule changes in kind (not just
 values), the app code in `data/identification/model/` must change too.
@@ -101,4 +102,4 @@ and can't be used with the project's Kotlin 2.2.10 compiler (DECISIONS D38).
 |---|---|
 | Measure inference time on the team's phones (`ModelInferenceTest`), then set `IdentificationViewModel.TIMEOUT_MILLIS` from it (now a provisional 30 s) | App team |
 | Test with real photos of each supported species on the phones, recording correct / not sure / wrong separately from usability findings | Research + AI leads |
-| Care values exist for only 6 of the 30 species (exact scientific-name matches). The other 24 show "No care guide available" | Research lead (Q17) |
+| Check the terms of use of the care and toxicity sources other than FloraDB (NC State Extension, Missouri Botanical Garden, UF/IFAS, ASPCA) before any distribution | Research lead (Q19) |

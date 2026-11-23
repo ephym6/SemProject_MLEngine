@@ -7,8 +7,8 @@ does not need an account.
 
 > **Current status: Sprint 7 (model integration).** Identification runs the
 > ML team's **PlantID v1** model on the device (30 species, plus "not sure" and
-> "no supported plant" answers), with care guides where care data exists, saved
-> history and no internet use. See `docs/AI_INTEGRATION.md`.
+> "no supported plant" answers), with a care guide and pet safety for every
+> species, saved history and no internet use. See `docs/AI_INTEGRATION.md`.
 
 ## Requirements
 
@@ -59,7 +59,7 @@ domain/identification/     # IdentificationService contract and outcome types
 data/identification/model/ # real model: metadata, preprocessing, decision rule, LiteRT
 domain/plant/              # Plant, PlantRepository, CareRecommendations (rule-based care tips)
 data/image/                # PhotoStore: private copy of the selected photo
-data/plant/                # reads the bundled assets/plants.json
+data/plant/                # builds the catalog from model/classes.json + model/care_tips.json
 domain/history/            # HistoryRecord, HistoryRepository
 data/history/              # Room database + downscaled photo copies for saved results
 data/identification/mock/  # demo identifier, used only by device tests
@@ -89,26 +89,22 @@ Planned: release preparation and research evaluation (Sprint 8).
 
 ### Plant data and care guides
 
-- `app/src/main/assets/plants.json` holds the model's 30 supported plants
-  (label, names, category, and care values where `care_tips.json` has an exact
-  scientific-name match: 6 so far) plus the source and licence. It is
-  **generated**: don't edit it by hand.
-- After the ML team changes `model/classes.json`, `model/labels.txt` or
-  `care_tips.json` (for example, adding species), regenerate it from the
-  repository root and commit the result:
-
-  ```bash
-  python Mobile-App/tools/sync_plant_data.py
-  ```
-
-  `PlantDataSyncTest` (unit tests) fails if the asset is out of date or a model
-  label has no plant.
+- The catalog is built **at runtime** from the ML team's `model/classes.json`
+  (the model's classes) and `model/care_tips.json` (care values and pet safety
+  for all 30 species), both packaged straight from the root `model/` folder.
+  There is no generated copy and no sync step. When the ML team updates those
+  files, the next build uses them. `PlantDataParserTest` checks the real files.
 - Care tips are **rule-based**: `CareRecommendations` keeps only plausible
-  values that exist in the source, and the screen words them with fixed
-  templates in `strings.xml`. No advice is generated or invented, and toxicity
-  data is never copied into the app (DECISIONS D20).
-- Source: FloraDB houseplant care sample, **CC BY-NC 4.0** (non-commercial,
-  attribution required). It is credited in the app.
+  values that exist in the source (light category and lux, watering interval,
+  temperature, humidity), and the screen words them with fixed templates in
+  `strings.xml`. No advice is generated or invented.
+- Each guide shows its **source** (FloraDB sample, CC BY-NC 4.0; or NC State
+  Extension / Missouri Botanical Garden for 10 species), a note when values were
+  **converted** from published advice (with the source's own wording), and the
+  ML team's notes (for example, genus-level classes).
+- **Pet safety** (dogs and cats) is shown with how it was established (ASPCA
+  list, a university extension list, or inferred from the genus), its source,
+  and a "not veterinary advice" note (DECISIONS D41).
 
 ### Photos and permissions
 

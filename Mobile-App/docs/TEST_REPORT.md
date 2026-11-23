@@ -75,7 +75,7 @@ Date: 2026-11-23 · Branch: `feature/model-integration` · Identifier: **PlantID
 | Check | Result |
 |---|---|
 | Debug build | Passes, no compiler warnings |
-| Unit tests | **81 tests, 0 failures**, incl. the decision rule against the metadata formula, metadata/labels consistency, every model label mapped to a plant, and plants.json in sync with `model/classes.json` + `care_tips.json` |
+| Unit tests | **82 tests, 0 failures**, incl. the decision rule against the metadata formula, metadata/labels consistency, and the catalog parsed from the real `model/classes.json` + `model/care_tips.json` (all 30 species with care values, sources and pet safety) |
 | Device tests | Compile (incl. new `ModelInferenceTest`). **Not run in this session** (no device attached) |
 | Inference time | **Not measured yet.** Run `ModelInferenceTest` and record the logged line here |
 
@@ -88,6 +88,6 @@ New known issues:
 | # | Issue | Impact | Plan |
 |---|---|---|---|
 | K12 | Debug APK about 33 MB (LiteRT native code for 4 CPU types) | Larger debug installs | Release as an App Bundle (Sprint 8) |
-| K13 | 24 of 30 species have no care data | "No care guide available" for most plants | Q17 (research lead) |
+| K13 | ~~24 of 30 species had no care data~~ | Resolved: `model/care_tips.json` covers all 30 | — |
 | K14 | Saved *not sure* results don't keep the possible-match guesses (history schema unchanged) | Saved record shows the warning only | Optional schema v2 with a migration |
 | K15 | Identification timeout still the provisional 30 s | No functional impact expected | Q18: set from measured timings |
