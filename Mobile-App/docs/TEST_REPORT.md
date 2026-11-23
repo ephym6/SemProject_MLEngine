@@ -93,3 +93,34 @@ New known issues:
 | K14 | Saved *not sure* results don't keep the possible-match guesses (history schema unchanged) | Saved record shows the warning only | Optional schema v2 with a migration |
 | K15 | Identification timeout still the provisional 30 s | No functional impact expected | Q18: set from measured timings |
 | K16 | Confidence is calibrated on the ML team's validation photos; on users' own photos it can be over-confident | A high % can still be wrong | Shown with a caveat (D43); evaluate on study photos (Sprint 8) |
+
+## 7. Sprint 8 — release and evaluation support
+
+Date: 2026-11-23 · Branch: `feature/release-evaluation`
+
+| Check | Result |
+|---|---|
+| Unit tests | **93 tests, 0 failures** (adds the results CSV format and export flow) |
+| Release signing | Checked with a throwaway key (deleted afterwards): `assembleRelease` and `bundleRelease` produce an APK and an `.aab` signed with it; without `keystore.properties` the release builds unsigned |
+| Lint | 0 errors; 8 warnings, all version notices |
+| Device tests | Compile (incl. new `CsvResultsExporterTest`). Not run in this session |
+| Release APK on a phone | **Not done yet:** needs the team's real key (`RELEASE.md`) |
+
+### Measuring inference time (Q18, D47)
+
+With a phone connected, from `Mobile-App/`:
+
+```bash
+./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=io.github.ephym6.plantid.data.identification.model.ModelInferenceTest
+adb logcat -d -s PlantIdModel
+```
+
+Copy the `first (incl. model load) … ms; warm … ms` line into the table in
+section 6, then set `IdentificationViewModel.TIMEOUT_MILLIS` from it (for
+example, a few times the slowest warm time).
+
+New known issue:
+
+| # | Issue | Impact | Plan |
+|---|---|---|---|
+| K17 | Failed identifications can't be saved, so they don't appear in the CSV | Must be noted by hand during the evaluation | Covered by `EVALUATION_PROTOCOL.md` |
