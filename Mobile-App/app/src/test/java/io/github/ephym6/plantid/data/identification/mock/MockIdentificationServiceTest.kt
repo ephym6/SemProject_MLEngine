@@ -2,7 +2,6 @@ package io.github.ephym6.plantid.data.identification.mock
 
 import io.github.ephym6.plantid.domain.identification.FailureReason
 import io.github.ephym6.plantid.domain.identification.IdentificationOutcome
-import io.github.ephym6.plantid.domain.plant.ContentSource
 import io.github.ephym6.plantid.domain.plant.Plant
 import io.github.ephym6.plantid.domain.plant.PlantCatalog
 import io.github.ephym6.plantid.domain.plant.PlantRepository
@@ -35,7 +34,7 @@ class MockIdentificationServiceTest {
         care = null,
     )
     private var catalog: Result<PlantCatalog> =
-        Result.success(PlantCatalog(ContentSource("Test source", null, null), listOf(pothos)))
+        Result.success(PlantCatalog(listOf(pothos)))
     private val plants = object : PlantRepository {
         override suspend fun catalog() = catalog
     }

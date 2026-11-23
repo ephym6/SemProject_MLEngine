@@ -7,7 +7,6 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.ephym6.plantid.domain.plant.CareRecommendations
 import io.github.ephym6.plantid.domain.plant.CareTip
-import io.github.ephym6.plantid.domain.plant.ContentSource
 import io.github.ephym6.plantid.domain.plant.Plant
 import io.github.ephym6.plantid.domain.plant.PlantRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +22,7 @@ class CareGuideViewModel(
 
     sealed interface UiState {
         data object Loading : UiState
-        data class Ready(val plant: Plant, val tips: List<CareTip>, val source: ContentSource) : UiState
+        data class Ready(val plant: Plant, val tips: List<CareTip>) : UiState
 
         /** The plant isn't in the catalog, or the source has no usable care values for it. */
         data object NoCareGuide : UiState
@@ -53,7 +52,7 @@ class CareGuideViewModel(
                     if (plant == null || tips.isEmpty()) {
                         UiState.NoCareGuide
                     } else {
-                        UiState.Ready(plant, tips, catalog.source)
+                        UiState.Ready(plant, tips)
                     }
                 },
                 onFailure = { UiState.Unavailable },

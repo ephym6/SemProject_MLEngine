@@ -1,111 +1,105 @@
-# PlantID — AI Integration Boundary (for Sprint 7)
+# PlantID — Model Integration
 
-What the Android app needs before the trained model can replace the demo
-identifier, and exactly where it plugs in. Written at the end of Sprint 6.
+How the trained model is connected to the Android app, and how to update it.
 
-> **Status:** the app uses `MockIdentificationService` (demo only). No model is
-> integrated. Anything below marked *(to confirm)* comes from reading
-> `Model_Base.ipynb` and must be confirmed by the AI lead with the exported
-> model. It is not an established fact about the final model.
+> **Status (Sprint 7):** the app runs the ML team's **PlantID v1** model on the
+> device (30 species + `other_plant`, MobileNetV2, float16 TFLite, 4.6 MB).
+> The demo identifier is now used **only by device tests**.
 
-## 1. The contract the model must fulfil
+## 1. Files and where they come from
 
-The whole UI depends on one interface:
+The ML team owns the repository's root [`model/`](../../model) folder. The app
+packages it **directly as assets** (`app/build.gradle.kts`), with no copy in
+`Mobile-App/`:
 
-```kotlin
-interface IdentificationService {
-    val modelInfo: ModelInfo                       // name, version, isDemo = false
-    suspend fun identify(photo: File): IdentificationOutcome
-}
-```
-
-`IdentificationOutcome` is one of:
-
-| Outcome | Meaning | UI |
-|---|---|---|
-| `Identified(model, classId, plant, scores)` | A supported class passed the agreed decision rule | Photo + name, care guide, save |
-| `Uncertain(model, scores)` | The model returned something, but the rule says it isn't confident | Warning, **no species name** |
-| `Unsupported(model)` | No acceptable supported class (other plant, not a plant) | Info, no plant |
-| `Failed(model, reason)` | Couldn't process or infer (`PhotoUnavailable`, `ModelUnavailable`, `ProcessingFailed`, `TimedOut`) | Error + Try again |
-
-Rules for the real implementation:
-
-- **Main-safe.** Decode, preprocess and run inference off the main thread
-  (`Dispatchers.Default`), and load the model once.
-- **Never throw, never fake.** Return `Failed` on any problem. Never fall back to
-  a successful-looking result.
-- **No interpretation in the UI.** The UI shows no confidence numbers. `scores`
-  are carried for diagnostics and evaluation only, until Q2 decides otherwise.
-- **`modelInfo.isDemo = false`** and a real `version`, so results and saved
-  history record which model produced them.
-
-## 2. Mapping model output to plants
-
-The bundled catalog (`app/src/main/assets/plants.json`, generated from
-`species_map.json` + `care_tips.json`) is keyed by **class label**
-(e.g. `Epipremnum_aureum`):
-
-```
-model output index i  →  class label  →  PlantCatalog.byClassLabel(label)  →  PlantSummary
-```
-
-- *(to confirm)* The notebook builds labels as
-  `class_to_idx = {c: i for i, c in enumerate(sorted(species_map.keys()))}`, so
-  output index *i* is the *i*-th class label in **sorted order**. Ship an
-  explicit `labels.txt` (one label per line, in output order) with the model
-  instead of relying on this.
-- A label with no catalog entry means the app data and model are out of sync.
-  Treat it as `Failed(ProcessingFailed)` and fix it by rerunning
-  `python Mobile-App/tools/sync_plant_data.py`. Never show such a label as a
-  plant.
-- **More species later:** retrain, update `species_map.json` / `care_tips.json`,
-  rerun the sync script, and ship the new model + labels. No app code changes.
-
-## 3. What the AI lead must deliver (spec §8.2)
-
-| # | Item | Notes |
-|---|---|---|
-| 1 | Approved model choice | Must match what the research report evaluates (spec §8.3) |
-| 2 | Mobile model file | e.g. `plantid.tflite` (LiteRT / TensorFlow Lite) |
-| 3 | `labels.txt` | Class labels in output order |
-| 4 | Input spec | *(to confirm)* 224 × 224 × 3 RGB. The notebook applies `mobilenet_v2.preprocess_input` **inside** the model graph, so the app would feed raw 0–255 float values. Confirm after export (and whether the model is quantised) |
-| 5 | Output spec | *(to confirm)* one softmax vector over the classes. Note the model has **no "unknown" class**: softmax always picks one |
-| 6 | Decision rule (Q2) | How scores map to Identified / Uncertain / Unsupported, with research justification. Not invented by the app team |
-| 7 | Model version string | Stored with every saved result |
-| 8 | Test images with expected labels | Include photos from a **different source** than training (the notebook notes same-source data only) |
-| 9 | Licence of training data | Check before distribution |
-
-## 4. Where the code goes (Sprint 7)
-
-| Piece | Location |
+| File | Used for |
 |---|---|
-| Model + labels | `app/src/main/assets/model/` |
-| Preprocessing (decode with EXIF rotation, resize, RGB) | `data/identification/model/` (never in UI composables) |
-| `ModelIdentificationService : IdentificationService` | `data/identification/model/` |
-| Decision rule (scores → outcome) | Pure Kotlin, unit-tested against the agreed thresholds |
-| Wiring | `di/AppContainer.kt`: `identificationService` and `demoScenarios` |
+| `plantid_v1.tflite` | The model (stored uncompressed in the APK so it can be memory-mapped) |
+| `labels.txt` | Output order: index *i* is line *i* |
+| `model_metadata.json` | Input size, labels, `other_plant_index`, the "not sure" rule (temperature, threshold), model name and file |
+| `classes.json` | Common and scientific names per label |
+| `care_tips.json` | Care values, light category, confidence, sources and pet safety for all 30 species, keyed by label |
 
-The swap in `AppContainer` is the only app change outside the new package. That
-is guarded by `ArchitectureTest`: only `di/` may reference concrete
-implementations such as the mock.
+The build stops with a clear message if `model/` is missing.
 
-After the swap:
+## 2. The contract
 
-- `demoScenarios` becomes `null`, so the Demo mode picker, demo banners and
-  Home's demo note disappear automatically.
-- Decide whether debug builds keep a way to select the mock (spec: "preserve a
-  development/test way to exercise mock outcomes where useful"). Release builds
-  must not use it.
-- Set the identification timeout (`IdentificationViewModel.TIMEOUT_MILLIS`, now
-  a provisional 30 s) from **measured** on-device inference time.
-- Check any new runtime dependency against the project's Kotlin 2.2.10
-  compiler (see DECISIONS D13/D28).
+The UI depends only on `IdentificationService`. `ModelIdentificationService`
+implements it:
 
-## 5. How it will be tested
+- **Off the main thread.** Decode and preprocess the photo, then run inference
+  on `Dispatchers.Default`. The model is loaded once, on first use.
+- **Never throws, never fakes.** A missing photo gives `Failed(PhotoUnavailable)`.
+  A model that can't load gives `Failed(ModelUnavailable)`. An undecodable photo,
+  an inference error or a label missing from the catalog gives
+  `Failed(ProcessingFailed)`.
+- **`ModelInfo`** comes from the metadata: name `PlantID v1`, version
+  `plantid_v1.tflite float16`, `isDemo = false`. It is stored with every saved
+  result.
+- **Scores:** the top 3 calibrated probabilities are carried for diagnostics.
+  They are never shown as percentages.
 
-- JVM: decision rule at and around each threshold, output → label → plant
-  mapping, unknown label → `Failed`, preprocessing dimensions.
-- Device: the existing UI and flow tests run unchanged against the contract.
-  Add a test that a known test image reaches the expected label.
-- Measure and record inference latency and memory on the team's phones.
-- Keep model-accuracy results separate from usability results (spec §8).
+### Preprocessing (from `model_metadata.json`)
+
+1. Apply EXIF orientation (Coil decodes the photo upright, at a reduced size
+   with the shorter side at least 448 px, to save memory).
+2. Centre-crop the largest square.
+3. Resize to 224 × 224, bilinear.
+4. Raw RGB 0–255 as float32, **no normalisation** (the model does it).
+
+### Decision rule (from `model_metadata.json`, resolves Q2)
+
+```
+p = softmax(log(probs) / temperature)          temperature = 0.7
+if argmax(p) == other_plant or max(p) < threshold:  "not sure"   threshold = 0.72
+else: labels[argmax(p)]
+```
+
+App mapping (DECISIONS D37):
+
+| Model answer | App outcome | UI |
+|---|---|---|
+| Top answer is `other_plant` | `Unsupported` | "No supported plant found", no names |
+| Top answer below threshold | `Uncertain` | "We couldn't confidently identify this plant" + **Possible matches (not confirmed)**: up to 3 guesses (never `other_plant`), no percentages, no care-guide links |
+| Otherwise | `Identified` | Plant name, care guide if available, save |
+
+The temperature and threshold are read from the metadata, so the ML team can
+retune them without app code changes.
+
+### Labels → plants
+
+```
+output index i → labels.txt line i → plant with that label (classes.json + care_tips.json) → name, care guide
+```
+
+The catalog is built at runtime from `model/classes.json` and
+`model/care_tips.json` (`PlantDataParser`). Unit tests against the real files
+fail if any model label (except `other_plant`) has no plant, if a species lacks
+complete care values or pet safety, or if a cited source site has no name.
+
+## 3. Updating the model (for example, more species)
+
+1. ML team: replace the files in `model/` (model, `labels.txt`, `classes.json`,
+   `model_metadata.json`, `care_tips.json`).
+2. `cd Mobile-App && ./gradlew testDebugUnitTest`. The parser and metadata
+   tests check that the files are consistent and that the app can read them.
+3. Run `ModelInferenceTest` on a phone and record the timings
+   (`TEST_REPORT.md`).
+4. Commit the `model/` changes. Nothing in `Mobile-App/` needs regenerating.
+
+If the input format, output layout or decision rule changes in kind (not just
+values), the app code in `data/identification/model/` must change too.
+
+## 4. Runtime
+
+**LiteRT 1.4.2** (`com.google.ai.edge.litert:litert`, the classic
+`org.tensorflow.lite.Interpreter` API). LiteRT 2.x is compiled with Kotlin 2.4
+and can't be used with the project's Kotlin 2.2.10 compiler (DECISIONS D38).
+
+## 5. Still to do
+
+| Item | Owner |
+|---|---|
+| Measure inference time on the team's phones (`ModelInferenceTest`), then set `IdentificationViewModel.TIMEOUT_MILLIS` from it (now a provisional 30 s) | App team |
+| Test with real photos of each supported species on the phones, recording correct / not sure / wrong separately from usability findings | Research + AI leads |
+| Check the terms of use of the care and toxicity sources other than FloraDB (NC State Extension, Missouri Botanical Garden, UF/IFAS, ASPCA) before any distribution | Research lead (Q19) |

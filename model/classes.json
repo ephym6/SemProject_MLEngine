@@ -1,0 +1,219 @@
+[
+ {
+  "index": 0,
+  "slug": "aloe_vera",
+  "common": "Aloe vera",
+  "scientific": "Aloe vera",
+  "category": "herb_edible"
+ },
+ {
+  "index": 1,
+  "slug": "anthurium",
+  "common": "Anthurium",
+  "scientific": "Anthurium andraeanum",
+  "category": "indoor"
+ },
+ {
+  "index": 2,
+  "slug": "areca_palm",
+  "common": "Areca palm",
+  "scientific": "Dypsis lutescens",
+  "category": "indoor"
+ },
+ {
+  "index": 3,
+  "slug": "arrowhead_vine",
+  "common": "Arrowhead vine",
+  "scientific": "Syngonium podophyllum",
+  "category": "indoor"
+ },
+ {
+  "index": 4,
+  "slug": "basil",
+  "common": "Basil",
+  "scientific": "Ocimum basilicum",
+  "category": "herb_edible"
+ },
+ {
+  "index": 5,
+  "slug": "bougainvillea",
+  "common": "Bougainvillea",
+  "scientific": "Bougainvillea spp.",
+  "category": "garden"
+ },
+ {
+  "index": 6,
+  "slug": "canna_lily",
+  "common": "Canna lily",
+  "scientific": "Canna indica",
+  "category": "garden"
+ },
+ {
+  "index": 7,
+  "slug": "chilli_pepper",
+  "common": "Chilli / sweet pepper",
+  "scientific": "Capsicum annuum",
+  "category": "herb_edible"
+ },
+ {
+  "index": 8,
+  "slug": "coleus",
+  "common": "Coleus",
+  "scientific": "Coleus scutellarioides",
+  "category": "garden"
+ },
+ {
+  "index": 9,
+  "slug": "corn_plant",
+  "common": "Corn plant",
+  "scientific": "Dracaena fragrans",
+  "category": "indoor"
+ },
+ {
+  "index": 10,
+  "slug": "croton",
+  "common": "Croton",
+  "scientific": "Codiaeum variegatum",
+  "category": "garden"
+ },
+ {
+  "index": 11,
+  "slug": "crown_of_thorns",
+  "common": "Crown of thorns",
+  "scientific": "Euphorbia milii",
+  "category": "garden"
+ },
+ {
+  "index": 12,
+  "slug": "dumb_cane",
+  "common": "Dumb cane",
+  "scientific": "Dieffenbachia seguine",
+  "category": "indoor"
+ },
+ {
+  "index": 13,
+  "slug": "duranta",
+  "common": "Duranta",
+  "scientific": "Duranta erecta",
+  "category": "garden"
+ },
+ {
+  "index": 14,
+  "slug": "frangipani",
+  "common": "Frangipani",
+  "scientific": "Plumeria spp.",
+  "category": "garden"
+ },
+ {
+  "index": 15,
+  "slug": "golden_pothos",
+  "common": "Golden pothos / Money plant",
+  "scientific": "Epipremnum aureum",
+  "category": "indoor"
+ },
+ {
+  "index": 16,
+  "slug": "hibiscus",
+  "common": "Hibiscus",
+  "scientific": "Hibiscus rosa-sinensis",
+  "category": "garden"
+ },
+ {
+  "index": 17,
+  "slug": "jade_plant",
+  "common": "Jade plant",
+  "scientific": "Crassula ovata",
+  "category": "indoor"
+ },
+ {
+  "index": 18,
+  "slug": "ming_aralia",
+  "common": "Ming aralia",
+  "scientific": "Polyscias fruticosa",
+  "category": "indoor"
+ },
+ {
+  "index": 19,
+  "slug": "mint",
+  "common": "Mint",
+  "scientific": "Mentha spp.",
+  "category": "herb_edible"
+ },
+ {
+  "index": 20,
+  "slug": "monstera",
+  "common": "Monstera",
+  "scientific": "Monstera deliciosa",
+  "category": "indoor"
+ },
+ {
+  "index": 21,
+  "slug": "other_plant",
+  "common": "Other plant (not supported)",
+  "scientific": "-",
+  "category": "other"
+ },
+ {
+  "index": 22,
+  "slug": "peace_lily",
+  "common": "Peace lily",
+  "scientific": "Spathiphyllum spp.",
+  "category": "indoor"
+ },
+ {
+  "index": 23,
+  "slug": "periwinkle",
+  "common": "Madagascar periwinkle",
+  "scientific": "Catharanthus roseus",
+  "category": "garden"
+ },
+ {
+  "index": 24,
+  "slug": "rosemary",
+  "common": "Rosemary",
+  "scientific": "Salvia rosmarinus",
+  "category": "herb_edible"
+ },
+ {
+  "index": 25,
+  "slug": "rubber_plant",
+  "common": "Rubber plant",
+  "scientific": "Ficus elastica",
+  "category": "indoor"
+ },
+ {
+  "index": 26,
+  "slug": "snake_plant",
+  "common": "Snake plant",
+  "scientific": "Dracaena trifasciata",
+  "category": "indoor"
+ },
+ {
+  "index": 27,
+  "slug": "spider_plant",
+  "common": "Spider plant",
+  "scientific": "Chlorophytum comosum",
+  "category": "indoor"
+ },
+ {
+  "index": 28,
+  "slug": "tomato",
+  "common": "Tomato",
+  "scientific": "Solanum lycopersicum",
+  "category": "herb_edible"
+ },
+ {
+  "index": 29,
+  "slug": "weeping_fig",
+  "common": "Weeping fig",
+  "scientific": "Ficus benjamina",
+  "category": "indoor"
+ },
+ {
+  "index": 30,
+  "slug": "zz_plant",
+  "common": "ZZ plant",
+  "scientific": "Zamioculcas zamiifolia",
+  "category": "indoor"
+ }
+]

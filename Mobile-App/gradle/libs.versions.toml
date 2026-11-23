@@ -14,6 +14,7 @@ coroutines = "1.10.2"
 serializationJson = "1.9.0" # 1.10+ needs Kotlin 2.3+; project compiler is 2.2.10
 room = "2.8.5"
 ksp = "2.3.14" # 2.3+ supports AGP 9 built-in Kotlin; 2.2.10-2.0.2 does not
+litert = "1.4.2" # 2.x is built with Kotlin 2.4+ (project compiler is 2.2.10); 1.x is the Java Interpreter API
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -40,6 +41,7 @@ androidx-room-runtime = { group = "androidx.room", name = "room-runtime", versio
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
+litert = { group = "com.google.ai.edge.litert", name = "litert", version.ref = "litert" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

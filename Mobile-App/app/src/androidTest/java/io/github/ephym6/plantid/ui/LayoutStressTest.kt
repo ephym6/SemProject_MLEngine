@@ -22,9 +22,13 @@ import io.github.ephym6.plantid.domain.identification.FailureReason
 import io.github.ephym6.plantid.domain.identification.IdentificationOutcome
 import io.github.ephym6.plantid.domain.identification.ModelInfo
 import io.github.ephym6.plantid.domain.identification.PlantSummary
+import io.github.ephym6.plantid.domain.plant.CareConfidence
 import io.github.ephym6.plantid.domain.plant.CareData
+import io.github.ephym6.plantid.domain.plant.CareInfo
 import io.github.ephym6.plantid.domain.plant.CareRecommendations
 import io.github.ephym6.plantid.domain.plant.ContentSource
+import io.github.ephym6.plantid.domain.plant.PetSafety
+import io.github.ephym6.plantid.domain.plant.PetSafetyBasis
 import io.github.ephym6.plantid.domain.plant.Plant
 import io.github.ephym6.plantid.domain.plant.PlantCatalog
 import io.github.ephym6.plantid.data.identification.mock.DemoScenario
@@ -67,7 +71,13 @@ class LayoutStressTest {
     private val record = HistoryRecord(
         "a", Instant.EPOCH, HistoryStatus.Identified, "c", "plant_a", plant.commonName, plant.scientificName, demo, null,
     )
-    private val care = CareData(lightLux = 500..3000, temperatureCelsius = 15..30, humidityPercent = 50, wateringIntervalDays = 7)
+    private val care = CareData(
+        lightLevel = "Bright Indirect to Direct Sun",
+        lightLux = 500..3000,
+        temperatureCelsius = 15..30,
+        humidityPercent = 50,
+        wateringIntervalDays = 7,
+    )
 
     /** Renders [content] small and with large text, then checks [reachable] texts and accessibility. */
     private fun stress(@StringRes vararg reachable: Int, content: @Composable () -> Unit) {
@@ -129,9 +139,15 @@ class LayoutStressTest {
     }
 
     @Test
-    fun uncertainResult() = stress(R.string.result_uncertain_title, R.string.action_try_another_photo) {
+    fun uncertainResult() = stress(
+        R.string.result_uncertain_title,
+        R.string.result_candidates_title,
+        R.string.action_try_another_photo,
+    ) {
         IdentificationScreen(
-            state = IdentificationViewModel.UiState.Finished(IdentificationOutcome.Uncertain(demo)),
+            state = IdentificationViewModel.UiState.Finished(
+                IdentificationOutcome.Uncertain(demo, candidates = listOf(plant, plant.copy(plantId = "b"), plant.copy(plantId = "c"))),
+            ),
             photo = null,
             saveState = SaveState.NotSaved,
             onSave = {},
@@ -159,12 +175,20 @@ class LayoutStressTest {
     }
 
     @Test
-    fun careGuide() = stress(R.string.care_humidity_title, R.string.care_source_title) {
+    fun careGuide() = stress(R.string.care_humidity_title, R.string.care_source_said_title, R.string.care_source_title) {
         CareGuideScreen(
             state = CareGuideViewModel.UiState.Ready(
-                Plant("p", "P", plant.commonName, plant.scientificName, "Testaceae", care),
+                Plant(
+                    "p", "P", plant.commonName, plant.scientificName, "Testaceae", care,
+                    careInfo = CareInfo(
+                        source = ContentSource("Test source with a reasonably long name", "https://example.org/a/long/path", "CC BY-NC 4.0"),
+                        confidence = CareConfidence.Medium,
+                        note = "A fairly long note from the team explaining which species these values come from.",
+                        sourceSaid = "Full sun or partial shade; moist, well-drained soil; plant after the last frost.",
+                    ),
+                    petSafety = PetSafety(true, true, "Long symptom text that wraps across several lines.", PetSafetyBasis.ExtensionListed, ContentSource("Test extension", null, null)),
+                ),
                 CareRecommendations.tipsFor(care),
-                ContentSource("Test source with a reasonably long name", "https://example.org/a/long/path", "CC BY-NC 4.0"),
             ),
             onBack = {},
             onRetry = {},
@@ -201,8 +225,12 @@ class LayoutStressTest {
             versionName = "1.0",
             catalog = Result.success(
                 PlantCatalog(
-                    ContentSource("Test source", null, "CC BY-NC 4.0"),
-                    listOf(Plant("p", "P", plant.commonName, plant.scientificName, null, null)),
+                    listOf(
+                        Plant(
+                            "p", "P", plant.commonName, plant.scientificName, null, null,
+                            careInfo = CareInfo(ContentSource("Test source", null, "CC BY-NC 4.0"), CareConfidence.High, null, null),
+                        ),
+                    ),
                 ),
             ),
         )

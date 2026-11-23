@@ -17,6 +17,7 @@ class ArchitectureTest {
 
     private val concreteImplementations = listOf(
         "MockIdentificationService",
+        "ModelIdentificationService",
         "CachePhotoStore",
         "AssetPlantRepository",
         "RoomHistoryRepository",

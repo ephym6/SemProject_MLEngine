@@ -17,7 +17,7 @@ class CareRecommendationsTest {
     fun `complete source data gives every tip in a fixed order`() {
         assertEquals(
             listOf(
-                CareTip.Light(500..3000),
+                CareTip.Light(level = null, lux = 500..3000),
                 CareTip.Watering(7),
                 CareTip.Temperature(15..30),
                 CareTip.Humidity(50),
@@ -39,7 +39,7 @@ class CareRecommendationsTest {
             CareRecommendations.tipsFor(CareData(wateringIntervalDays = 14)),
         )
         assertEquals(
-            listOf(CareTip.Light(2000..6000), CareTip.Humidity(55)),
+            listOf(CareTip.Light(level = null, lux = 2000..6000), CareTip.Humidity(55)),
             CareRecommendations.tipsFor(CareData(lightLux = 2000..6000, humidityPercent = 55)),
         )
     }
@@ -65,11 +65,24 @@ class CareRecommendationsTest {
     @Test
     fun `single-value ranges and boundary values are kept`() {
         assertEquals(
-            listOf(CareTip.Light(1000..1000), CareTip.Temperature(20..20), CareTip.Humidity(0)),
+            listOf(CareTip.Light(level = null, lux = 1000..1000), CareTip.Temperature(20..20), CareTip.Humidity(0)),
             CareRecommendations.tipsFor(
                 CareData(lightLux = 1000..1000, temperatureCelsius = 20..20, humidityPercent = 0),
             ),
         )
         assertEquals(listOf(CareTip.Humidity(100)), CareRecommendations.tipsFor(CareData(humidityPercent = 100)))
+    }
+
+    @Test
+    fun `light keeps the source's plain-language level, with or without lux`() {
+        assertEquals(
+            listOf(CareTip.Light(level = "Bright Indirect", lux = 500..3000)),
+            CareRecommendations.tipsFor(CareData(lightLevel = "Bright Indirect", lightLux = 500..3000)),
+        )
+        assertEquals(
+            listOf(CareTip.Light(level = "Medium", lux = null)),
+            CareRecommendations.tipsFor(CareData(lightLevel = " Medium ", lightLux = 3000..500)),
+        )
+        assertTrue(CareRecommendations.tipsFor(CareData(lightLevel = "  ")).isEmpty())
     }
 }

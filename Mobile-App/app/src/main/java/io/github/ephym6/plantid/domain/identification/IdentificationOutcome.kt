@@ -29,11 +29,15 @@ sealed interface IdentificationOutcome {
     /**
      * The model returned something, but the decision rule says it is not
      * confident. Must never be displayed as a species identification.
+     *
+     * [candidates] are the model's top guesses (at most 3, best first), shown only
+     * as unconfirmed "possible matches" (DECISIONS D37), never as a result.
      */
     @Serializable
     data class Uncertain(
         override val model: ModelInfo,
         val scores: List<ClassScore> = emptyList(),
+        val candidates: List<PlantSummary> = emptyList(),
     ) : IdentificationOutcome
 
     /** No acceptable supported class: an unsupported plant, or not a plant at all. */

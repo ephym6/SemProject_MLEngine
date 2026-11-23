@@ -29,6 +29,11 @@ Device: ____________  Android: ____  Build/commit: ________  Tester: ____  Date:
 | 2.16 | Dark mode and large font size (Settings → Display) | Sheet, dialogs and preview readable, nothing clipped, page scrolls | |
 | 2.17 | Gallery after taking a photo in PlantID | The photo is **not** added to the gallery | |
 
+> **Since Sprint 7** the app uses the real model and no longer shows the Demo
+> mode picker or demo banners. The demo-based checks in the Sprint 3–5 sections
+> are now covered by device tests (which switch to the demo identifier). Use the
+> Sprint 7 section for the real model.
+
 ## Sprint 3 — Mock identification flow
 
 Device: ____________  Android: ____  Build/commit: ________  Tester: ____  Date: ________
@@ -68,7 +73,7 @@ Identification results are still **demo** output.
 | 4.4 | Care guide → Back (top bar and system) | Returns to the same result | |
 | 4.5 | Demo *Identified, some details missing* → **View care guide** | "No care guide available"; Back returns to the result | |
 | 4.6 | Demo *Not confident* / *No supported plant* / *Something goes wrong* | **No** View care guide button | |
-| 4.7 | About tab | Lists 7 supported plants (common + scientific names); *Care information* card credits FloraDB and its licence | |
+| 4.7 | About tab | Lists the supported plants (30 since Sprint 7) (common + scientific names); *Care information* card credits FloraDB and its licence | |
 | 4.8 | Airplane mode, repeat 4.2 | Care guide still loads (offline) | |
 | 4.9 | Dark mode + large font on the care guide | Readable, nothing clipped, page scrolls | |
 | 4.10 | TalkBack on the care guide | Section titles are read as headings; values and notes are read | |
@@ -115,3 +120,30 @@ Device: ____________  Android: ____  Build/commit: ________  Tester: ____  Date:
 | 6.9 | Double-tap **View care guide**, a History row, **Identify plant** | Opens one screen, once | |
 | 6.10 | Airplane mode, full walk | Everything works offline | |
 | 6.11 | Receive a call / open notifications / lock the screen during *Analyzing* (slow demo) | Returns to a sensible state; no crash | |
+
+## Sprint 7 — Real model
+
+Device: ____________  Android: ____  Build/commit: ________  Tester: ____  Date: ________
+
+Record model results (correct / not sure / wrong) **separately** from
+usability observations. Don't count them as the formal accuracy evaluation
+unless the research protocol says so.
+
+| # | Steps | Expected | Result |
+|---|---|---|---|
+| 7.1 | Any photo → preview | No Demo mode card; Home and results show no demo banners | |
+| 7.2 | Clear photo of a supported FloraDB plant (e.g. Golden pothos, Snake plant, Monstera) | Correct name; **View care guide** shows light category + lux, watering, temperature, humidity, pet safety and the FloraDB source (CC BY-NC 4.0) | |
+| 7.3 | Clear photo of a plant with converted values (Basil, Mint, Rosemary, Tomato, Duranta…) | Care guide shows **Converted from gardening advice**, **What the source says**, and its NC State / Missouri Botanical Garden source | |
+| 7.4 | Blurry, dark or partial photo of a supported plant | Either identified, or "We couldn't confidently identify this plant" with **Possible matches (not confirmed)** (≤ 3 names, no percentages, no care links) | |
+| 7.5 | Photo of a plant that isn't one of the 30 | "No supported plant found", or "not sure" with guesses. Note which | |
+| 7.6 | Photo of something that isn't a plant (cup, wall, hand) | Not identified as a plant (ideally "No supported plant found"). Note what appears | |
+| 7.7 | Same photo identified twice | Same answer both times | |
+| 7.8 | First identification after a fresh start, then a second one | Note how long each "Analyzing" takes (first includes loading the model) | |
+| 7.9 | Airplane mode, identify | Works offline | |
+| 7.10 | Save a real result, then open it from History | Shows model result (no Demo tag); care guide link if identified | |
+| 7.11 | Rotate during Analyzing; switch apps on the result (with *Don't keep activities*) | Not restarted; same result after returning | |
+| 7.12 | Run `ModelInferenceTest` and copy the timing line into `TEST_REPORT.md` | Recorded | |
+| 7.13 | Care guide of a toxic plant (e.g. Peace lily, Duranta) | **Pet safety** in warning style: toxic to dogs/cats, details, how it was established, source, and the "not veterinary advice" note | |
+| 7.14 | Care guide of Ming aralia and Crown of thorns | Pet safety says **inferred from related plants (genus), not confirmed**; Ming aralia shows the lower-confidence warning | |
+| 7.15 | Care guide of Bougainvillea and Peace lily | **Note from the PlantID team** explains the genus-level values | |
+| 7.16 | About tab | Credits list FloraDB (CC BY-NC 4.0), NC State Extension, Missouri Botanical Garden, UF/IFAS and ASPCA sources | |

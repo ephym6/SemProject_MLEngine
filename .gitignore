@@ -57,3 +57,13 @@ desktop.ini
 # ==============================
 Mobile-App/PLANTID_MOBILE_APP_SPEC.md
 PLANTID_MOBILE_APP_SPEC.md
+
+# ==============================
+# Local tool settings and ML training data/outputs
+# (from the ML engine repository)
+# ==============================
+.claude/
+CLAUDE.md
+outputs/
+plantid_v1/
+*.zip

@@ -64,7 +64,7 @@ fun AboutScreen(
                 title = stringResource(R.string.about_privacy_title),
                 body = stringResource(R.string.about_privacy_body),
             )
-            catalog?.getOrNull()?.source?.let { SourcesCard(it) }
+            catalog?.getOrNull()?.sources?.takeIf { it.isNotEmpty() }?.let { SourcesCard(it) }
             Text(
                 text = stringResource(R.string.about_version, versionName),
                 style = MaterialTheme.typography.labelMedium,
@@ -97,11 +97,13 @@ private fun SupportedPlantsCard(catalog: Result<PlantCatalog>?) {
     }
 }
 
+/** Credits every source behind the care guides and pet safety, with licences where known. */
 @Composable
-private fun SourcesCard(source: ContentSource) {
+private fun SourcesCard(sources: List<ContentSource>) {
+    val names = sources.joinToString("; ") { if (it.license != null) "${it.name} (${it.license})" else it.name }
     TextCard(
         title = stringResource(R.string.about_sources_title),
-        body = stringResource(R.string.about_sources_body, source.name, source.license ?: source.url.orEmpty()),
+        body = stringResource(R.string.about_sources_body, names),
     )
 }
 
@@ -123,7 +125,6 @@ private fun Plant.displayName(): String = when {
 @Composable
 private fun AboutScreenPreview() {
     val catalog = PlantCatalog(
-        source = ContentSource("Preview source", null, "CC BY-NC 4.0"),
         plants = listOf(
             Plant("a", "A", "Preview Plant", "Preview species (fictional)", null, null),
         ),

@@ -74,7 +74,7 @@ class MockIdentificationService(
         const val SLOW_DELAY_MILLIS = 6_000L
 
         /** The supported plant every "identified" demo result shows (Golden Pothos). */
-        const val DEMO_CLASS_LABEL = "Epipremnum_aureum"
+        const val DEMO_CLASS_LABEL = "golden_pothos"
     }
 }
 

@@ -23,7 +23,7 @@
     <string name="home_recent_title">Recent identifications</string>
     <string name="action_view_all">View all</string>
     <string name="home_scope_title">Selected plants only</string>
-    <string name="home_scope_message">PlantID works with a small set of common indoor plants. It can\'t identify every plant.</string>
+    <string name="home_scope_message">PlantID works with a selected set of plants common in homes and gardens. It can\'t identify every plant.</string>
     <string name="home_view_history">View history</string>
 
     <!-- Photo source chooser -->
@@ -82,6 +82,8 @@
     <string name="result_description_title">About this plant</string>
     <string name="result_uncertain_title">We couldn\'t confidently identify this plant</string>
     <string name="result_uncertain_message">Try another photo with the leaves clearly visible and good lighting.</string>
+    <string name="result_candidates_title">Possible matches (not confirmed)</string>
+    <string name="result_candidates_note">PlantID isn\'t sure. These are its closest guesses. Compare them with your plant before relying on any of them.</string>
     <string name="result_unsupported_title">No supported plant found</string>
     <string name="result_unsupported_message">This photo didn\'t match any of the plants PlantID supports. It may be a different plant, or the plant may not be clear in the photo.</string>
     <string name="result_failed_title">We couldn\'t analyze this photo</string>
@@ -118,6 +120,24 @@
     <string name="care_humidity_title">Humidity</string>
     <string name="care_humidity_value">Around %1$d%%</string>
     <string name="care_humidity_note">Ideal relative humidity listed for this plant in the source.</string>
+    <string name="care_light_measured">Measured range: %1$s.</string>
+    <string name="care_confidence_medium_title">Converted from gardening advice</string>
+    <string name="care_confidence_medium_message">The main care dataset doesn\'t cover this plant, so these values were converted from the published advice shown below. Treat them as approximate.</string>
+    <string name="care_confidence_low_title">Lower-confidence values</string>
+    <string name="care_confidence_low_message">The source is less certain about these values. Treat them as approximate.</string>
+    <string name="care_note_title">Note from the PlantID team</string>
+    <string name="care_source_said_title">What the source says</string>
+    <string name="care_pet_title">Pet safety</string>
+    <string name="care_pet_summary_both">Toxic to dogs and cats</string>
+    <string name="care_pet_summary_none">Not toxic to dogs or cats</string>
+    <string name="care_pet_summary_dogs">Toxic to dogs, not to cats</string>
+    <string name="care_pet_summary_cats">Toxic to cats, not to dogs</string>
+    <string name="care_pet_basis_aspca">Checked against the ASPCA list of toxic and non-toxic plants.</string>
+    <string name="care_pet_basis_extension">Not in the ASPCA list. A university extension source lists a poison risk, so it\'s marked as toxic.</string>
+    <string name="care_pet_basis_genus">Inferred from related plants in the same genus. Not confirmed for this species.</string>
+    <string name="care_pet_basis_unknown">How this was established isn\'t recorded.</string>
+    <string name="care_pet_disclaimer">This isn\'t veterinary advice. If a pet eats part of a plant, contact a vet or an animal poison control service.</string>
+    <string name="care_pet_source">Source: %1$s</string>
     <string name="care_source_title">Source</string>
     <string name="care_source_with_license">%1$s. License: %2$s.</string>
     <string name="care_none_title">No care guide available</string>
@@ -168,7 +188,7 @@
     <!-- About. Keep the privacy text in line with what the app actually does (DECISIONS D11). -->
     <string name="about_title">About</string>
     <string name="about_purpose_title">What PlantID does</string>
-    <string name="about_purpose_body">PlantID helps you identify selected common indoor plants from a photo and explore their care guide.</string>
+    <string name="about_purpose_body">PlantID helps you identify selected plants common in homes and gardens from a photo and explore their care guide.</string>
     <string name="about_prototype_title">Research prototype</string>
     <string name="about_prototype_body">PlantID is being built for an academic research project. It supports a limited set of plants, and its results are not a guarantee.</string>
     <string name="about_supported_title">Supported plants</string>
@@ -178,7 +198,7 @@
     </plurals>
     <string name="about_supported_unavailable">The list of supported plants couldn\'t be loaded.</string>
     <string name="about_sources_title">Care information</string>
-    <string name="about_sources_body">Care guides use values from %1$s (%2$s). Toxicity information from the source is not shown.</string>
+    <string name="about_sources_body">Care guides and pet safety come from: %1$s. Pet safety isn\'t veterinary advice.</string>
     <string name="about_privacy_title">Privacy</string>
     <string name="about_privacy_body">PlantID does not need an account and does not use the internet. When you take or choose a photo, PlantID keeps a temporary copy on this device so it can show it to you; only the most recent one is kept. If you save a result, it stays in History on this device, with a smaller copy of the photo without location data, until you delete it. Nothing is uploaded, and PlantID\'s data is left out of device backups. Photos you take in PlantID are not added to your gallery.</string>
     <string name="about_version">Version %1$s</string>
