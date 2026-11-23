@@ -20,17 +20,23 @@ class PlantDataParserTest {
     private val bundledText = File("src/main/assets/plants.json").readText()
 
     @Test
-    fun `bundled data has the 7 supported plants with complete care values`() {
+    fun `bundled data has the 30 model species, six with complete care values`() {
         val catalog = PlantDataParser.parse(bundledText)
 
-        assertEquals(7, catalog.plants.size)
+        assertEquals(30, catalog.plants.size)
         catalog.plants.forEach { plant ->
             assertNotNull("${plant.id} common name", plant.commonName)
             assertNotNull("${plant.id} scientific name", plant.scientificName)
-            assertEquals("${plant.id} tips", 4, CareRecommendations.tipsFor(plant.care).size)
         }
+        val withCare = catalog.plants.filter { CareRecommendations.tipsFor(it.care).isNotEmpty() }
+        assertEquals(
+            setOf("coleus", "golden_pothos", "jade_plant", "ming_aralia", "rubber_plant", "weeping_fig"),
+            withCare.map { it.id }.toSet(),
+        )
+        withCare.forEach { assertEquals("${it.id} tips", 4, CareRecommendations.tipsFor(it.care).size) }
         assertEquals(catalog.plants.size, catalog.plants.map { it.classLabel }.toSet().size)
-        assertEquals("Golden Pothos", catalog.byClassLabel("Epipremnum_aureum")?.commonName)
+        assertNull("other_plant is not a plant", catalog.byClassLabel("other_plant"))
+        assertEquals("Epipremnum aureum", catalog.byClassLabel("golden_pothos")?.scientificName)
     }
 
     @Test
