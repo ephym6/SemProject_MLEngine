@@ -11,8 +11,9 @@ import kotlinx.coroutines.withContext
 import java.io.IOException
 
 /**
- * Reads the bundled `assets/plants.json` once, off the main thread, and caches
- * it. Offline. A failure isn't cached, so a later call can retry.
+ * Reads the ML team's `classes.json` and `care_tips.json` (packaged from the
+ * repository's `model/` folder) once, off the main thread, and caches the
+ * catalog. Offline. A failure isn't cached, so a later call can retry.
  */
 class AssetPlantRepository(
     context: Context,
@@ -27,8 +28,9 @@ class AssetPlantRepository(
         cached?.let { return@withLock Result.success(it) }
         withContext(ioDispatcher) {
             try {
-                val text = appContext.assets.open(ASSET_NAME).bufferedReader().use { it.readText() }
-                Result.success(PlantDataParser.parse(text).also { cached = it })
+                val classes = read(PlantDataParser.CLASSES_ASSET)
+                val care = read(PlantDataParser.CARE_TIPS_ASSET)
+                Result.success(PlantDataParser.parse(classes, care).also { cached = it })
             } catch (e: IOException) {
                 Result.failure(e)
             } catch (e: IllegalArgumentException) {
@@ -37,7 +39,5 @@ class AssetPlantRepository(
         }
     }
 
-    private companion object {
-        const val ASSET_NAME = "plants.json"
-    }
+    private fun read(asset: String) = appContext.assets.open(asset).bufferedReader().use { it.readText() }
 }

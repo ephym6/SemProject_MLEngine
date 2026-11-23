@@ -2,7 +2,6 @@ package io.github.ephym6.plantid.ui.care
 
 import io.github.ephym6.plantid.domain.plant.CareData
 import io.github.ephym6.plantid.domain.plant.CareTip
-import io.github.ephym6.plantid.domain.plant.ContentSource
 import io.github.ephym6.plantid.domain.plant.Plant
 import io.github.ephym6.plantid.domain.plant.PlantCatalog
 import io.github.ephym6.plantid.domain.plant.PlantRepository
@@ -24,10 +23,9 @@ import java.io.IOException
 class CareGuideViewModelTest {
 
     private val dispatcher = StandardTestDispatcher()
-    private val source = ContentSource("Source", null, "CC BY-NC 4.0")
     private val withCare = Plant("a", "A", "Plant A", "Species a", null, CareData(wateringIntervalDays = 7))
     private val withoutCare = Plant("b", "B", "Plant B", null, null, care = null)
-    private val catalog = PlantCatalog(source, listOf(withCare, withoutCare))
+    private val catalog = PlantCatalog(listOf(withCare, withoutCare))
 
     private class FakeRepository(var result: Result<PlantCatalog>) : PlantRepository {
         override suspend fun catalog() = result
@@ -45,7 +43,7 @@ class CareGuideViewModelTest {
         assertEquals(UiState.Loading, viewModel.uiState.value)
         advanceUntilIdle()
 
-        assertEquals(UiState.Ready(withCare, listOf(CareTip.Watering(7)), source), viewModel.uiState.value)
+        assertEquals(UiState.Ready(withCare, listOf(CareTip.Watering(7))), viewModel.uiState.value)
     }
 
     @Test
@@ -75,6 +73,6 @@ class CareGuideViewModelTest {
         viewModel.retry()
         advanceUntilIdle()
 
-        assertEquals(UiState.Ready(withCare, listOf(CareTip.Watering(7)), source), viewModel.uiState.value)
+        assertEquals(UiState.Ready(withCare, listOf(CareTip.Watering(7))), viewModel.uiState.value)
     }
 }
