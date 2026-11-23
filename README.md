@@ -6,8 +6,8 @@ The machine-learning engine of **PlantID**, a mobile app that identifies plants 
 |---|---|
 | `Model_Base.ipynb` | Base model (Project Deliverable 2): MobileNetV2 on 7 species |
 | `Model_Final.ipynb` | **Final model** (Project Deliverable 3): one notebook with every step, from data collection and cleaning to training, evaluation, explainability, TensorFlow Lite export and a demo. Saved with the outputs of the final training run |
-| `FloraDB_Exploration.ipynb`, `care_tips.json`, `species_map.json` | Plant care data used by the app |
-| `model/` | Files the Android app needs: `plantid_v1.tflite`, `labels.txt`, `classes.json`, `model_metadata.json` |
+| `FloraDB_Exploration.ipynb`, `care_tips.json`, `species_map.json` | FloraDB exploration and the base model's care data (7 species) |
+| `model/` | Files the Android app needs: `plantid_v1.tflite`, `labels.txt`, `classes.json`, `model_metadata.json`, and `care_tips.json` (care and pet safety for all 30 species, keyed by the labels in `labels.txt`) |
 
 ## Final model in short
 
@@ -34,6 +34,23 @@ Input: one RGB photo, turned upright, centre-cropped to a square, resized to 224
 (no normalisation; the model does it). Output: 31 probabilities in the order of `labels.txt`. To decide the answer,
 apply the temperature and threshold in `model_metadata.json` (the exact rule is written there): if the top answer is
 `other_plant` or below the threshold, show "Not sure which plant this is" with the top-3 guesses.
+
+## Care tips (`model/care_tips.json`)
+
+Each of the 30 species has: watering interval (days), light (category and lux range), temperature range, ideal
+humidity, and whether it is toxic to dogs and cats with symptoms. `other_plant` has no entry. The file is built in
+`Model_Final.ipynb`, Section 15.
+
+* **20 species** are copied unchanged from the FloraDB sample, the same source as the base model's care tips
+  (`care_confidence` as given by FloraDB). For peace lily and bougainvillea the values are FloraDB's for
+  *Spathiphyllum wallisii* and *Bougainvillea glabra*.
+* **10 species** that FloraDB does not cover (basil, canna lily, chilli pepper, crown of thorns, duranta,
+  frangipani, mint, periwinkle, rosemary, tomato) use published advice from NC State Extension, Missouri Botanical
+  Garden and UF/IFAS, converted to FloraDB's number scale with fixed rules anchored on FloraDB's own plants
+  (`care_confidence: "medium"`). Each entry keeps the original wording in `source_said` and links its sources.
+* Pet toxicity comes from the ASPCA. Where the ASPCA has no listing, a university extension source is used and the
+  plant is marked toxic if that source lists any poison risk (`toxicity_status: "extension_listed"`).
+  Toxicity information is not veterinary advice.
 
 ## For team members: running the notebook again
 
