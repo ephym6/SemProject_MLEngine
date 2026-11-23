@@ -54,6 +54,8 @@ class HistoryFlowTest {
 
     @Before
     fun setUp() {
+        // Deterministic outcomes: these tests drive the demo identifier, not the real model.
+        container.useDemoIdentifier(true)
         runBlocking { container.historyRepository.clearAll() }
         container.demoScenarios!!.select(DemoScenario.Identified)
         plantName = runBlocking {
@@ -84,6 +86,7 @@ class HistoryFlowTest {
         runBlocking { container.historyRepository.clearAll() }
         container.demoScenarios!!.select(DemoScenario.Identified)
         source.delete()
+        container.useDemoIdentifier(false)
     }
 
     @Test

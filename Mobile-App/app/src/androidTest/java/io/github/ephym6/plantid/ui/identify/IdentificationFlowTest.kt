@@ -55,6 +55,8 @@ class IdentificationFlowTest {
 
     @Before
     fun setUp() {
+        // Deterministic outcomes: these tests drive the demo identifier, not the real model.
+        container.useDemoIdentifier(true)
         // The container is app-wide, so reset the demo scenario between tests.
         container.demoScenarios!!.select(DemoScenario.Identified)
         demoPlantName = runBlocking {
@@ -82,6 +84,7 @@ class IdentificationFlowTest {
     fun tearDown() {
         container.demoScenarios!!.select(DemoScenario.Identified)
         source.delete()
+        container.useDemoIdentifier(false)
     }
 
     private fun identifyWith(scenario: DemoScenario) {
