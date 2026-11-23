@@ -22,9 +22,12 @@ sealed interface IdentificationOutcome {
         /** Classifier label, e.g. a training class folder name. */
         val classId: String,
         val plant: PlantSummary,
-        /** Raw scores if the model provides them. Not shown in the UI until Q2 is decided. */
+        /** Calibrated scores if the model provides them; the answer's is shown as its confidence (D43). */
         val scores: List<ClassScore> = emptyList(),
-    ) : IdentificationOutcome
+    ) : IdentificationOutcome {
+        /** Calibrated probability of this answer, or null if the identifier gives no scores (e.g. demo). */
+        val confidence: Float? get() = scores.scoreFor(classId)
+    }
 
     /**
      * The model returned something, but the decision rule says it is not
@@ -54,9 +57,16 @@ sealed interface IdentificationOutcome {
     ) : IdentificationOutcome
 }
 
-/** A raw model score for one class. Not necessarily a calibrated probability. */
+/**
+ * A model score for one class. For the PlantID model this is the calibrated
+ * probability (temperature-scaled on the ML team's validation photos): an
+ * estimate, never a guarantee.
+ */
 @Serializable
 data class ClassScore(val classId: String, val score: Float)
+
+/** The score for [classId], if present. */
+fun List<ClassScore>.scoreFor(classId: String): Float? = firstOrNull { it.classId == classId }?.score
 
 @Serializable
 enum class FailureReason {

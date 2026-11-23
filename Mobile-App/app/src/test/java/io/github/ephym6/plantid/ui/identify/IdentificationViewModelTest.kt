@@ -1,6 +1,7 @@
 package io.github.ephym6.plantid.ui.identify
 
 import androidx.lifecycle.SavedStateHandle
+import io.github.ephym6.plantid.domain.identification.ClassScore
 import io.github.ephym6.plantid.domain.identification.FailureReason
 import io.github.ephym6.plantid.domain.identification.IdentificationOutcome
 import io.github.ephym6.plantid.domain.identification.IdentificationService
@@ -241,6 +242,7 @@ class IdentificationViewModelTest {
         val savedState = SavedStateHandle()
         val identified = IdentificationOutcome.Identified(
             model, "Epipremnum_aureum", PlantSummary("epipremnum_aureum", "Golden Pothos", "Epipremnum aureum", null),
+            scores = listOf(ClassScore("Epipremnum_aureum", 0.87f), ClassScore("other", 0.13f)),
         )
         val service = FakeService(model) { identified }
         IdentificationViewModel(photo, service, history, savedState, clock = { now }, newEventId = { "event-1" })
@@ -249,6 +251,7 @@ class IdentificationViewModelTest {
         val restored = recreate(service, savedState)
 
         assertEquals(UiState.Finished(identified), restored.uiState.value)
+        assertEquals("confidence survives too", 0.87f, (identified as IdentificationOutcome.Identified).confidence)
         assertEquals("not identified again", 1, service.calls)
         advanceUntilIdle()
         restored.save()
