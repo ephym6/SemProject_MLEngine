@@ -13,13 +13,16 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
 import io.github.ephym6.plantid.R
+import io.github.ephym6.plantid.domain.identification.ClassScore
 import io.github.ephym6.plantid.domain.identification.PlantSummary
+import io.github.ephym6.plantid.domain.identification.scoreFor
 import io.github.ephym6.plantid.ui.components.PlantIdCard
 import io.github.ephym6.plantid.ui.components.PlantPhoto
 import io.github.ephym6.plantid.ui.components.SecondaryButton
 import io.github.ephym6.plantid.ui.components.StatusMessage
 import io.github.ephym6.plantid.ui.components.StatusTone
 import io.github.ephym6.plantid.ui.components.TextCard
+import io.github.ephym6.plantid.ui.components.formatConfidence
 import io.github.ephym6.plantid.ui.theme.Spacing
 import java.io.File
 
@@ -36,13 +39,17 @@ fun DemoResultBanner() {
     )
 }
 
-/** Photo and plant name in one card (visually associated), then the success status. Call inside a Column. */
+/**
+ * Photo and plant name in one card (visually associated), the model's calibrated
+ * [confidence] if known (D43), then the success status. Call inside a Column.
+ */
 @Composable
 fun IdentifiedSummary(
     commonName: String?,
     scientificName: String?,
     description: String?,
     photo: File?,
+    confidence: Float? = null,
 ) {
     PlantIdCard {
         PlantPhoto(
@@ -66,6 +73,7 @@ fun IdentifiedSummary(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+        confidence?.let { ConfidenceLine(it) }
     }
     StatusMessage(
         tone = StatusTone.Success,
@@ -81,11 +89,16 @@ enum class NoMatchKind { Uncertain, Unsupported }
 /**
  * Photo plus the uncertain/unsupported status. Never shows a plant as the
  * result. For uncertain results the model's guesses ([candidates]) appear in a
- * separate "possible matches (not confirmed)" card: no percentages, no care
- * guide links (DECISIONS D37). Call inside a Column.
+ * separate "possible matches (not confirmed)" card with their calibrated
+ * percentages (D43) but no care guide links (D37). Call inside a Column.
  */
 @Composable
-fun NoMatchSummary(kind: NoMatchKind, photo: File?, candidates: List<PlantSummary> = emptyList()) {
+fun NoMatchSummary(
+    kind: NoMatchKind,
+    photo: File?,
+    candidates: List<PlantSummary> = emptyList(),
+    scores: List<ClassScore> = emptyList(),
+) {
     PlantPhoto(
         photo = photo,
         contentDescription = stringResource(R.string.result_photo_description),
@@ -103,7 +116,7 @@ fun NoMatchSummary(kind: NoMatchKind, photo: File?, candidates: List<PlantSummar
         modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
     )
     if (kind == NoMatchKind.Uncertain && candidates.isNotEmpty()) {
-        PossibleMatches(candidates)
+        PossibleMatches(candidates, scores)
     }
     Text(
         text = stringResource(R.string.home_scope_message),
@@ -113,7 +126,21 @@ fun NoMatchSummary(kind: NoMatchKind, photo: File?, candidates: List<PlantSummar
 }
 
 @Composable
-private fun PossibleMatches(candidates: List<PlantSummary>) {
+private fun ConfidenceLine(confidence: Float) {
+    Text(
+        text = stringResource(R.string.result_confidence, formatConfidence(confidence)),
+        style = MaterialTheme.typography.titleMedium,
+        modifier = Modifier.padding(top = Spacing.xs),
+    )
+    Text(
+        text = stringResource(R.string.result_confidence_note),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
+@Composable
+private fun PossibleMatches(candidates: List<PlantSummary>, scores: List<ClassScore>) {
     PlantIdCard {
         Text(
             text = stringResource(R.string.result_candidates_title),
@@ -127,11 +154,17 @@ private fun PossibleMatches(candidates: List<PlantSummary>) {
         )
         candidates.forEach { plant ->
             val name = plant.commonName ?: plant.scientificName ?: return@forEach
+            val label = if (plant.commonName != null && plant.scientificName != null) {
+                "$name (${plant.scientificName})"
+            } else {
+                name
+            }
+            val score = scores.scoreFor(plant.plantId)
             Text(
-                text = "•  " + if (plant.commonName != null && plant.scientificName != null) {
-                    "$name (${plant.scientificName})"
+                text = "•  " + if (score != null) {
+                    stringResource(R.string.result_candidate_with_confidence, label, formatConfidence(score))
                 } else {
-                    name
+                    label
                 },
                 style = MaterialTheme.typography.bodyMedium,
             )

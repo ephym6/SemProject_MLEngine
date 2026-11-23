@@ -131,8 +131,9 @@ private fun ResultContent(
                 scientificName = outcome.plant.scientificName,
                 description = outcome.plant.description,
                 photo = photo,
+                confidence = outcome.confidence,
             )
-            is IdentificationOutcome.Uncertain -> NoMatchSummary(NoMatchKind.Uncertain, photo, outcome.candidates)
+            is IdentificationOutcome.Uncertain -> NoMatchSummary(NoMatchKind.Uncertain, photo, outcome.candidates, outcome.scores)
             is IdentificationOutcome.Unsupported -> NoMatchSummary(NoMatchKind.Unsupported, photo)
             is IdentificationOutcome.Failed -> FailedContent(outcome.reason, onRetry, onIdentifyAnother, onBackToHome)
         }
