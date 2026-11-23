@@ -7,6 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.ephym6.plantid.domain.history.HistoryStatus
 import io.github.ephym6.plantid.domain.history.NewHistoryEntry
+import io.github.ephym6.plantid.domain.identification.ClassScore
 import io.github.ephym6.plantid.domain.identification.FailureReason
 import io.github.ephym6.plantid.domain.identification.IdentificationOutcome
 import io.github.ephym6.plantid.domain.identification.ModelInfo
@@ -37,7 +38,9 @@ class RoomHistoryRepositoryTest {
 
     private val demo = ModelInfo("Demo", null, isDemo = true)
     private val plant = PlantSummary("epipremnum_aureum", "Golden Pothos", "Epipremnum aureum", null)
-    private val identified = IdentificationOutcome.Identified(demo, "Epipremnum_aureum", plant)
+    private val identified = IdentificationOutcome.Identified(
+        demo, "Epipremnum_aureum", plant, scores = listOf(ClassScore("Epipremnum_aureum", 0.87f)),
+    )
     private val time = Instant.parse("2026-11-19T10:15:30Z")
 
     @Before
@@ -78,6 +81,7 @@ class RoomHistoryRepositoryTest {
         assertEquals("Epipremnum_aureum", record.classId)
         assertEquals(time, record.identifiedAt)
         assertTrue(record.model.isDemo)
+        assertEquals(0.87f, record.confidence)
         assertTrue("photo copy exists", record.photo!!.isFile)
         assertEquals(true, repository.observeIsSaved("a").first())
     }
@@ -108,6 +112,7 @@ class RoomHistoryRepositoryTest {
         val byId = repository.observeAll().first().associateBy { it.id }
         assertEquals(HistoryStatus.Uncertain, byId.getValue("u").status)
         assertNull(byId.getValue("u").commonName)
+        assertNull("only identified results keep a confidence", byId.getValue("u").confidence)
         assertEquals(HistoryStatus.Unsupported, byId.getValue("n").status)
     }
 

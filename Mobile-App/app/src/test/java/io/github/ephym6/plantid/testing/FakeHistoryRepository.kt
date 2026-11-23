@@ -47,6 +47,7 @@ class FakeHistoryRepository : HistoryRepository {
                     scientificName = plant?.scientificName,
                     model = entry.outcome.model,
                     photo = entry.photo,
+                    confidence = (entry.outcome as? IdentificationOutcome.Identified)?.confidence,
                 ),
             ) + records.value
         }

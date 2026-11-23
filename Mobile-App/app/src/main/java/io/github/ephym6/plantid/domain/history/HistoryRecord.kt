@@ -23,6 +23,8 @@ data class HistoryRecord(
     val model: ModelInfo,
     /** The saved, downscaled photo copy, or null if none was kept. The file may be missing. */
     val photo: File?,
+    /** Calibrated model confidence of an identified result, if the identifier gave one (D43). */
+    val confidence: Float? = null,
 )
 
 /** Outcomes that can be saved. Failed attempts are never saved. */

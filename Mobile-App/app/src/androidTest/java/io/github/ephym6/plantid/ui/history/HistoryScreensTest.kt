@@ -35,6 +35,7 @@ class HistoryScreensTest {
     private val identified = HistoryRecord(
         "a", Instant.EPOCH, HistoryStatus.Identified, "c", "plant_a", "Test Plant", "Test species (fictional)", demo,
         photo = File("/definitely/missing.jpg"),
+        confidence = 0.83f,
     )
     private val uncertain = HistoryRecord("b", Instant.EPOCH, HistoryStatus.Uncertain, null, null, null, null, demo, null)
 
@@ -118,6 +119,8 @@ class HistoryScreensTest {
 
         composeRule.onNodeWithText(str(R.string.demo_banner_title)).assertIsDisplayed()
         composeRule.onNodeWithText("Test Plant").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText(composeRule.activity.getString(R.string.result_confidence, "83%"))
+            .performScrollTo().assertIsDisplayed()
         // Missing photo file: placeholder, no crash.
         composeRule.onNodeWithText(str(R.string.action_view_care_guide)).performScrollTo().performClick()
         assertEquals("plant_a", careGuideFor)

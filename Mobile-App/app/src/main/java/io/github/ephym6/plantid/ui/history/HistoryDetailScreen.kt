@@ -157,6 +157,7 @@ private fun RecordContent(
                 scientificName = record.scientificName,
                 description = null,
                 photo = record.photo,
+                confidence = record.confidence,
             )
             HistoryStatus.Uncertain -> NoMatchSummary(NoMatchKind.Uncertain, record.photo)
             HistoryStatus.Unsupported -> NoMatchSummary(NoMatchKind.Unsupported, record.photo)
