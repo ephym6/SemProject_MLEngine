@@ -114,6 +114,27 @@ class IdentificationScreenTest {
     }
 
     @Test
+    fun uncertainShowsGuessesOnlyAsUnconfirmedPossibleMatches() {
+        show(UiState.Finished(IdentificationOutcome.Uncertain(demo, candidates = listOf(complete, minimal))))
+
+        composeRule.onNodeWithText(str(R.string.result_uncertain_title)).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText(str(R.string.result_candidates_title)).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Test Plant A (Test species (fictional))", substring = true)
+            .performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Test Plant B", substring = true).performScrollTo().assertIsDisplayed()
+        // Never presented as a result: no success status, no care guide.
+        composeRule.onNodeWithText(str(R.string.result_identified_title)).assertDoesNotExist()
+        composeRule.onNodeWithText(str(R.string.action_view_care_guide)).assertDoesNotExist()
+    }
+
+    @Test
+    fun uncertainWithoutGuessesHasNoPossibleMatchesCard() {
+        show(UiState.Finished(IdentificationOutcome.Uncertain(demo)))
+
+        composeRule.onNodeWithText(str(R.string.result_candidates_title)).assertDoesNotExist()
+    }
+
+    @Test
     fun unsupportedShowsNoPlant() {
         show(UiState.Finished(IdentificationOutcome.Unsupported(demo)))
 

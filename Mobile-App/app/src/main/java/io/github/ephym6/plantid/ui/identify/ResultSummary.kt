@@ -13,6 +13,7 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
 import io.github.ephym6.plantid.R
+import io.github.ephym6.plantid.domain.identification.PlantSummary
 import io.github.ephym6.plantid.ui.components.PlantIdCard
 import io.github.ephym6.plantid.ui.components.PlantPhoto
 import io.github.ephym6.plantid.ui.components.SecondaryButton
@@ -77,9 +78,14 @@ fun IdentifiedSummary(
 
 enum class NoMatchKind { Uncertain, Unsupported }
 
-/** Photo plus the uncertain/unsupported status. Never shows a plant name. Call inside a Column. */
+/**
+ * Photo plus the uncertain/unsupported status. Never shows a plant as the
+ * result. For uncertain results the model's guesses ([candidates]) appear in a
+ * separate "possible matches (not confirmed)" card: no percentages, no care
+ * guide links (DECISIONS D37). Call inside a Column.
+ */
 @Composable
-fun NoMatchSummary(kind: NoMatchKind, photo: File?) {
+fun NoMatchSummary(kind: NoMatchKind, photo: File?, candidates: List<PlantSummary> = emptyList()) {
     PlantPhoto(
         photo = photo,
         contentDescription = stringResource(R.string.result_photo_description),
@@ -96,11 +102,41 @@ fun NoMatchSummary(kind: NoMatchKind, photo: File?) {
         ),
         modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
     )
+    if (kind == NoMatchKind.Uncertain && candidates.isNotEmpty()) {
+        PossibleMatches(candidates)
+    }
     Text(
         text = stringResource(R.string.home_scope_message),
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
+}
+
+@Composable
+private fun PossibleMatches(candidates: List<PlantSummary>) {
+    PlantIdCard {
+        Text(
+            text = stringResource(R.string.result_candidates_title),
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.semantics { heading() },
+        )
+        Text(
+            text = stringResource(R.string.result_candidates_note),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        candidates.forEach { plant ->
+            val name = plant.commonName ?: plant.scientificName ?: return@forEach
+            Text(
+                text = "•  " + if (plant.commonName != null && plant.scientificName != null) {
+                    "$name (${plant.scientificName})"
+                } else {
+                    name
+                },
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+    }
 }
 
 /** Save state of the current result. */

@@ -129,9 +129,15 @@ class LayoutStressTest {
     }
 
     @Test
-    fun uncertainResult() = stress(R.string.result_uncertain_title, R.string.action_try_another_photo) {
+    fun uncertainResult() = stress(
+        R.string.result_uncertain_title,
+        R.string.result_candidates_title,
+        R.string.action_try_another_photo,
+    ) {
         IdentificationScreen(
-            state = IdentificationViewModel.UiState.Finished(IdentificationOutcome.Uncertain(demo)),
+            state = IdentificationViewModel.UiState.Finished(
+                IdentificationOutcome.Uncertain(demo, candidates = listOf(plant, plant.copy(plantId = "b"), plant.copy(plantId = "c"))),
+            ),
             photo = null,
             saveState = SaveState.NotSaved,
             onSave = {},

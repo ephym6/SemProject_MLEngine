@@ -23,7 +23,7 @@
     <string name="home_recent_title">Recent identifications</string>
     <string name="action_view_all">View all</string>
     <string name="home_scope_title">Selected plants only</string>
-    <string name="home_scope_message">PlantID works with a small set of common indoor plants. It can\'t identify every plant.</string>
+    <string name="home_scope_message">PlantID works with a selected set of plants common in homes and gardens. It can\'t identify every plant.</string>
     <string name="home_view_history">View history</string>
 
     <!-- Photo source chooser -->
@@ -82,6 +82,8 @@
     <string name="result_description_title">About this plant</string>
     <string name="result_uncertain_title">We couldn\'t confidently identify this plant</string>
     <string name="result_uncertain_message">Try another photo with the leaves clearly visible and good lighting.</string>
+    <string name="result_candidates_title">Possible matches (not confirmed)</string>
+    <string name="result_candidates_note">PlantID isn\'t sure. These are its closest guesses. Compare them with your plant before relying on any of them.</string>
     <string name="result_unsupported_title">No supported plant found</string>
     <string name="result_unsupported_message">This photo didn\'t match any of the plants PlantID supports. It may be a different plant, or the plant may not be clear in the photo.</string>
     <string name="result_failed_title">We couldn\'t analyze this photo</string>
@@ -168,7 +170,7 @@
     <!-- About. Keep the privacy text in line with what the app actually does (DECISIONS D11). -->
     <string name="about_title">About</string>
     <string name="about_purpose_title">What PlantID does</string>
-    <string name="about_purpose_body">PlantID helps you identify selected common indoor plants from a photo and explore their care guide.</string>
+    <string name="about_purpose_body">PlantID helps you identify selected plants common in homes and gardens from a photo and explore their care guide.</string>
     <string name="about_prototype_title">Research prototype</string>
     <string name="about_prototype_body">PlantID is being built for an academic research project. It supports a limited set of plants, and its results are not a guarantee.</string>
     <string name="about_supported_title">Supported plants</string>
