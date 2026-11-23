@@ -147,3 +147,6 @@ unless the research protocol says so.
 | 7.14 | Care guide of Ming aralia and Crown of thorns | Pet safety says **inferred from related plants (genus), not confirmed**; Ming aralia shows the lower-confidence warning | |
 | 7.15 | Care guide of Bougainvillea and Peace lily | **Note from the PlantID team** explains the genus-level values | |
 | 7.16 | About tab | Credits list FloraDB (CC BY-NC 4.0), NC State Extension, Missouri Botanical Garden, UF/IFAS and ASPCA sources | |
+| 7.17 | Identified result | **Model confidence: N%** (N ≥ 72) with the note about the team's test photos; never 100% | |
+| 7.18 | "Not sure" result | Possible matches show a % each (all below 72%); no confidence line for the result itself | |
+| 7.19 | Save an identified result, open it from History | Same confidence shown; records saved before this update show none and still open | |

@@ -75,8 +75,9 @@ Date: 2026-11-23 · Branch: `feature/model-integration` · Identifier: **PlantID
 | Check | Result |
 |---|---|
 | Debug build | Passes, no compiler warnings |
-| Unit tests | **82 tests, 0 failures**, incl. the decision rule against the metadata formula, metadata/labels consistency, and the catalog parsed from the real `model/classes.json` + `model/care_tips.json` (all 30 species with care values, sources and pet safety) |
-| Device tests | Compile (incl. new `ModelInferenceTest`). **Not run in this session** (no device attached) |
+| Unit tests | **85 tests, 0 failures**, incl. the decision rule, metadata/labels consistency, the catalog from the real `model/` files, and confidence formatting |
+| Device tests | Team member ran them on their phone (reported 2026-11-23: "it runs well"). Pass counts and timings not yet recorded below |
+| Real-photo check | Same report: the model classified some of the tester's own plants, "not as accurate" as on the test set. Expected with different cameras, lighting and backgrounds; record per-photo results with `MANUAL_TESTS.md` 7.2–7.7 |
 | Inference time | **Not measured yet.** Run `ModelInferenceTest` and record the logged line here |
 
 | Date | Device / Android | First identification (incl. model load) | Warm identifications |
@@ -91,3 +92,4 @@ New known issues:
 | K13 | ~~24 of 30 species had no care data~~ | Resolved: `model/care_tips.json` covers all 30 | — |
 | K14 | Saved *not sure* results don't keep the possible-match guesses (history schema unchanged) | Saved record shows the warning only | Optional schema v2 with a migration |
 | K15 | Identification timeout still the provisional 30 s | No functional impact expected | Q18: set from measured timings |
+| K16 | Confidence is calibrated on the ML team's validation photos; on users' own photos it can be over-confident | A high % can still be wrong | Shown with a caveat (D43); evaluate on study photos (Sprint 8) |

@@ -48,6 +48,7 @@ class RoomHistoryRepository(
                 modelVersion = entry.outcome.model.version,
                 isDemo = entry.outcome.model.isDemo,
                 photoFileName = photoName,
+                confidence = (entry.outcome as? IdentificationOutcome.Identified)?.confidence,
             ),
         )
         // A concurrent save won the race: don't leave a second copy's file behind.
@@ -80,6 +81,7 @@ class RoomHistoryRepository(
             scientificName = scientificName,
             model = ModelInfo(name = modelName, version = modelVersion, isDemo = isDemo),
             photo = photoFileName?.let(photos::fileFor),
+            confidence = confidence,
         )
     }
 

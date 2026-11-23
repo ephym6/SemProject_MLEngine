@@ -1,6 +1,7 @@
 package io.github.ephym6.plantid.data.history
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Database
@@ -34,6 +35,8 @@ data class HistoryEntity(
     @ColumnInfo(name = "is_demo") val isDemo: Boolean,
     /** File name in the history photo directory, or null. */
     @ColumnInfo(name = "photo_file") val photoFileName: String?,
+    /** Calibrated confidence of an identified result (added in schema 2; null for older records). */
+    @ColumnInfo(name = "confidence") val confidence: Float? = null,
 )
 
 @Dao
@@ -64,7 +67,16 @@ interface HistoryDao {
     suspend fun deleteAll()
 }
 
-@Database(entities = [HistoryEntity::class], version = 1, exportSchema = true)
+/**
+ * Schema history: 1 = Sprint 5; 2 = adds `confidence` (Sprint 7, auto-migrated,
+ * existing records keep a null confidence). Exported schemas: app/schemas/.
+ */
+@Database(
+    entities = [HistoryEntity::class],
+    version = 2,
+    exportSchema = true,
+    autoMigrations = [AutoMigration(from = 1, to = 2)],
+)
 abstract class PlantIdDatabase : RoomDatabase() {
     abstract fun historyDao(): HistoryDao
 

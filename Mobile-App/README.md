@@ -130,6 +130,8 @@ a temporary private copy; nothing is uploaded. See `docs/DECISIONS.md` D12.
 - `data/identification/model/` reads `model_metadata.json`, preprocesses the
   photo (upright, centre-crop, 224 × 224, raw RGB), runs the model with LiteRT
   1.4.2 off the main thread, and applies the ML team's "not sure" rule.
+- Results show the model's **calibrated confidence** (e.g. "Model confidence:
+  87%"), with a note that it was measured on the team's photos (D43).
 - Details, the decision rule and how to update the model:
   [`docs/AI_INTEGRATION.md`](docs/AI_INTEGRATION.md).
 - `MockIdentificationService` (demo outcomes) is now used **only by device

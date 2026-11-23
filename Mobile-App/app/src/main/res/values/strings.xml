@@ -82,6 +82,9 @@
     <string name="result_description_title">About this plant</string>
     <string name="result_uncertain_title">We couldn\'t confidently identify this plant</string>
     <string name="result_uncertain_message">Try another photo with the leaves clearly visible and good lighting.</string>
+    <string name="result_confidence">Model confidence: %1$s</string>
+    <string name="result_confidence_note">The model\'s calibrated estimate, measured on the team\'s test photos. Your photos can differ, so compare it with your plant.</string>
+    <string name="result_candidate_with_confidence">%1$s — %2$s</string>
     <string name="result_candidates_title">Possible matches (not confirmed)</string>
     <string name="result_candidates_note">PlantID isn\'t sure. These are its closest guesses. Compare them with your plant before relying on any of them.</string>
     <string name="result_unsupported_title">No supported plant found</string>

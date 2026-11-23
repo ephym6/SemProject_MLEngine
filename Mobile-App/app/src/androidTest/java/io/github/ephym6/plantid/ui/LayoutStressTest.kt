@@ -18,6 +18,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.ephym6.plantid.R
 import io.github.ephym6.plantid.domain.history.HistoryRecord
 import io.github.ephym6.plantid.domain.history.HistoryStatus
+import io.github.ephym6.plantid.domain.identification.ClassScore
 import io.github.ephym6.plantid.domain.identification.FailureReason
 import io.github.ephym6.plantid.domain.identification.IdentificationOutcome
 import io.github.ephym6.plantid.domain.identification.ModelInfo
@@ -120,13 +121,16 @@ class LayoutStressTest {
 
     @Test
     fun identifiedResult() = stress(
+        R.string.result_confidence_note,
         R.string.action_view_care_guide,
         R.string.action_save_to_history,
         R.string.action_identify_another,
         R.string.action_back_to_home,
     ) {
         IdentificationScreen(
-            state = IdentificationViewModel.UiState.Finished(IdentificationOutcome.Identified(demo, "c", plant)),
+            state = IdentificationViewModel.UiState.Finished(
+                IdentificationOutcome.Identified(demo, "c", plant, scores = listOf(ClassScore("c", 0.87f))),
+            ),
             photo = null,
             saveState = SaveState.NotSaved,
             onSave = {},
@@ -146,7 +150,11 @@ class LayoutStressTest {
     ) {
         IdentificationScreen(
             state = IdentificationViewModel.UiState.Finished(
-                IdentificationOutcome.Uncertain(demo, candidates = listOf(plant, plant.copy(plantId = "b"), plant.copy(plantId = "c"))),
+                IdentificationOutcome.Uncertain(
+                    demo,
+                    scores = listOf(ClassScore("plant_a", 0.41f), ClassScore("b", 0.22f), ClassScore("c", 0.09f)),
+                    candidates = listOf(plant, plant.copy(plantId = "b"), plant.copy(plantId = "c")),
+                ),
             ),
             photo = null,
             saveState = SaveState.NotSaved,

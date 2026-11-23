@@ -28,7 +28,8 @@ import java.nio.channels.FileChannel
  * - everything runs off the main thread, the model is loaded once (lazily);
  * - it never throws and never fakes a result: problems become `Failed`;
  * - model labels map to plants through the bundled catalog (class label = plant id);
- * - raw scores are carried for diagnostics only (top 3, calibrated), never shown.
+ * - calibrated scores for every class are carried with the outcome; the UI shows
+ *   the answer's and the guesses' confidence (DECISIONS D43).
  */
 class ModelIdentificationService(
     context: Context,
@@ -77,7 +78,7 @@ class ModelIdentificationService(
 
     private suspend fun toOutcome(metadata: ModelMetadata, decision: DecisionRule.Decision): IdentificationOutcome {
         val catalog = plants.catalog().getOrNull() ?: return failed(FailureReason.ProcessingFailed)
-        val scores = topScores(metadata.labels, decision.calibrated)
+        val scores = calibratedScores(metadata.labels, decision.calibrated)
         return when (decision) {
             is DecisionRule.Decision.Unsupported -> IdentificationOutcome.Unsupported(modelInfo)
             is DecisionRule.Decision.Uncertain -> IdentificationOutcome.Uncertain(
@@ -97,8 +98,9 @@ class ModelIdentificationService(
 
     private fun PlantCatalog.summaryFor(label: String) = byClassLabel(label)?.toSummary()
 
-    private fun topScores(labels: List<String>, calibrated: DoubleArray): List<ClassScore> =
-        calibrated.indices.sortedByDescending { calibrated[it] }.take(SCORES_KEPT)
+    /** Every class's calibrated probability (after temperature), highest first. */
+    private fun calibratedScores(labels: List<String>, calibrated: DoubleArray): List<ClassScore> =
+        calibrated.indices.sortedByDescending { calibrated[it] }
             .map { ClassScore(labels[it], calibrated[it].toFloat()) }
 
     private fun load(): Loaded {
@@ -137,6 +139,5 @@ class ModelIdentificationService(
     private companion object {
         const val FALLBACK_NAME = "PlantID model"
         const val THREADS = 4
-        const val SCORES_KEPT = 3
     }
 }

@@ -47,6 +47,10 @@ android {
         getByName("main") {
             assets.directories.add(modelDir.path)
         }
+        // Exported Room schemas, so device tests can check migrations.
+        getByName("androidTest") {
+            assets.directories.add("$projectDir/schemas")
+        }
     }
     androidResources {
         // Stored uncompressed so the interpreter can memory-map the model.
