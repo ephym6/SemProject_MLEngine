@@ -63,6 +63,7 @@ PLANTID_MOBILE_APP_SPEC.md
 # (from the ML engine repository)
 # ==============================
 .claude/
+CLAUDE.md
 outputs/
 plantid_v1/
 *.zip
