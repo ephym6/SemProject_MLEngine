@@ -50,7 +50,7 @@ Device test results (fill in):
 
 | # | Issue | Impact | Plan |
 |---|---|---|---|
-| K1 | Identification is the **demo mock**. Results don't describe the photo | By design; labelled everywhere | Sprint 7 (`AI_INTEGRATION.md`) |
+| K1 | ~~Identification is the demo mock~~ | Resolved in Sprint 7: real on-device model | — |
 | K2 | Kotlin compiler pinned at 2.2.10, so several libraries are pinned too: Coil 3.3.0, kotlinx-serialization-json 1.9.0, Compose BOM 2026.02.01. KSP must be 2.3.x | Missing newer library fixes; lint warns | Team decision on a Kotlin upgrade (would lift all pins) |
 | K3 | Release build never run on a device; no signing config | Release-only issues (e.g. R8 rules) are undetected | Sprint 8: create a signing key (never committed), test the release build |
 | K4 | Landscape and tablets not optimised (not required for v1) | Works and scrolls, but photos are large in landscape | Only if the team needs it |
@@ -67,3 +67,27 @@ Device test results (fill in):
 Ready for review: [`AI_INTEGRATION.md`](AI_INTEGRATION.md) describes the
 contract, the output → plant mapping, what the AI lead must deliver, and where
 the model plugs in.
+
+## 6. Sprint 7 — model integration
+
+Date: 2026-11-23 · Branch: `feature/model-integration` · Identifier: **PlantID v1 model**
+
+| Check | Result |
+|---|---|
+| Debug build | Passes, no compiler warnings |
+| Unit tests | **81 tests, 0 failures**, incl. the decision rule against the metadata formula, metadata/labels consistency, every model label mapped to a plant, and plants.json in sync with `model/classes.json` + `care_tips.json` |
+| Device tests | Compile (incl. new `ModelInferenceTest`). **Not run in this session** (no device attached) |
+| Inference time | **Not measured yet.** Run `ModelInferenceTest` and record the logged line here |
+
+| Date | Device / Android | First identification (incl. model load) | Warm identifications |
+|---|---|---|---|
+| | | ms | ms |
+
+New known issues:
+
+| # | Issue | Impact | Plan |
+|---|---|---|---|
+| K12 | Debug APK about 33 MB (LiteRT native code for 4 CPU types) | Larger debug installs | Release as an App Bundle (Sprint 8) |
+| K13 | 24 of 30 species have no care data | "No care guide available" for most plants | Q17 (research lead) |
+| K14 | Saved *not sure* results don't keep the possible-match guesses (history schema unchanged) | Saved record shows the warning only | Optional schema v2 with a migration |
+| K15 | Identification timeout still the provisional 30 s | No functional impact expected | Q18: set from measured timings |

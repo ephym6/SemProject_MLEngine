@@ -5,11 +5,10 @@ plant, see the identification result, read its care guide, and revisit past
 identifications. All processing is meant to happen on the device, and the app
 does not need an account.
 
-> **Current status: Sprint 6 (hardening) — interface ready for model
-> integration.** The full flow works with a clearly labelled **demo**
-> identifier: photo → preview → identify → result → care guide → save → History.
-> **No real model is connected yet** (Sprint 7, see `docs/AI_INTEGRATION.md`).
-> Test results and known issues: `docs/TEST_REPORT.md`.
+> **Current status: Sprint 7 (model integration).** Identification runs the
+> ML team's **PlantID v1** model on the device (30 species, plus "not sure" and
+> "no supported plant" answers), with care guides where care data exists, saved
+> history and no internet use. See `docs/AI_INTEGRATION.md`.
 
 ## Requirements
 
@@ -57,12 +56,13 @@ PlantIdApplication.kt      # owns the AppContainer
 MainActivity.kt            # sets the theme and PlantIdApp
 di/AppContainer.kt         # manual dependency container
 domain/identification/     # IdentificationService contract and outcome types
+data/identification/model/ # real model: metadata, preprocessing, decision rule, LiteRT
 domain/plant/              # Plant, PlantRepository, CareRecommendations (rule-based care tips)
 data/image/                # PhotoStore: private copy of the selected photo
 data/plant/                # reads the bundled assets/plants.json
 domain/history/            # HistoryRecord, HistoryRepository
 data/history/              # Room database + downscaled photo copies for saved results
-data/identification/mock/  # DEMO-only mock identifier, demo scenarios, fictional plants
+data/identification/mock/  # demo identifier, used only by device tests
 ui/
 ├── PlantIdApp.kt          # app shell: bottom bar, navigation host, photo selection
 ├── navigation/            # type-safe routes, NavHost, navigation helpers
@@ -73,7 +73,7 @@ ui/
 ├── home/  history/  about/   # one package per screen
 ```
 
-Planned additions: the real on-device identifier (Sprint 7).
+Planned: release preparation and research evaluation (Sprint 8).
 
 ### Saved history
 
@@ -89,17 +89,20 @@ Planned additions: the real on-device identifier (Sprint 7).
 
 ### Plant data and care guides
 
-- `app/src/main/assets/plants.json` holds the 7 supported plants (names,
-  family, classifier class label, care values) and the source and licence. It
-  is **generated**: don't edit it by hand.
-- After the AI team changes `species_map.json` or `care_tips.json` (for example,
-  adding species), regenerate it from the repository root and commit the result:
+- `app/src/main/assets/plants.json` holds the model's 30 supported plants
+  (label, names, category, and care values where `care_tips.json` has an exact
+  scientific-name match: 6 so far) plus the source and licence. It is
+  **generated**: don't edit it by hand.
+- After the ML team changes `model/classes.json`, `model/labels.txt` or
+  `care_tips.json` (for example, adding species), regenerate it from the
+  repository root and commit the result:
 
   ```bash
   python Mobile-App/tools/sync_plant_data.py
   ```
 
-  `PlantDataSyncTest` (unit tests) fails if the asset is out of date.
+  `PlantDataSyncTest` (unit tests) fails if the asset is out of date or a model
+  label has no plant.
 - Care tips are **rule-based**: `CareRecommendations` keeps only plausible
   values that exist in the source, and the screen words them with fixed
   templates in `strings.xml`. No advice is generated or invented, and toxicity
@@ -124,20 +127,19 @@ a temporary private copy; nothing is uploaded. See `docs/DECISIONS.md` D12.
 - Icons: Material Symbols Rounded as vector drawables in `res/drawable/ic_*.xml`.
 - Screens take state and callbacks only. They never receive the `NavController`.
 
-### Mock identification (demo only)
+### Identification model
 
-The UI only talks to the `IdentificationService` interface. Until the real
-model is integrated, `MockIdentificationService` is the only implementation:
-
-- It **does not analyse the photo** (it only checks the file exists) and
-  returns the outcome chosen in the preview's **Demo mode** card: identified,
-  identified with missing details, not confident, no supported plant, error,
-  or slow (about 6 s).
-- *Identified* always returns the same supported plant (Golden Pothos) from the
-  plant data, so the care guide can be shown. *Missing details* returns a
-  fictional plant ("Demo Plant B") that has no care guide. It returns no scores.
-- Every result it produces shows a **Demo result** banner. Never present these
-  results as real predictions or use them as model-accuracy data.
+- The ML team's files in the repository's root `model/` folder are packaged
+  directly as app assets (no copy here). The build fails if the folder is missing.
+- `data/identification/model/` reads `model_metadata.json`, preprocesses the
+  photo (upright, centre-crop, 224 × 224, raw RGB), runs the model with LiteRT
+  1.4.2 off the main thread, and applies the ML team's "not sure" rule.
+- Details, the decision rule and how to update the model:
+  [`docs/AI_INTEGRATION.md`](docs/AI_INTEGRATION.md).
+- `MockIdentificationService` (demo outcomes) is now used **only by device
+  tests**, through `AppContainer.useDemoIdentifier`.
+- The debug APK is about 33 MB because LiteRT ships native code for four CPU
+  types. A release App Bundle only delivers one.
 
 ## Documentation
 
@@ -147,5 +149,5 @@ model is integrated, `MockIdentificationService` is the only implementation:
   automated tests can't drive (photo picker, camera).
 - [`docs/TEST_REPORT.md`](docs/TEST_REPORT.md): Sprint 6 test results, fixes and
   known issues.
-- [`docs/AI_INTEGRATION.md`](docs/AI_INTEGRATION.md): what the trained model
-  must provide and where it plugs in (Sprint 7).
+- [`docs/AI_INTEGRATION.md`](docs/AI_INTEGRATION.md): how the trained model is
+  integrated, its decision rule, and how to update it.
