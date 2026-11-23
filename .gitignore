@@ -1,0 +1,10 @@
+# Local tool and editor settings
+.claude/
+.idea/
+
+# Data, training outputs and caches (kept outside the repository)
+outputs/
+plantid_v1/
+*.zip
+__pycache__/
+.ipynb_checkpoints/
