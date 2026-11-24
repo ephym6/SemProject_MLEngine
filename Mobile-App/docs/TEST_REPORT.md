@@ -52,7 +52,7 @@ Device test results (fill in):
 |---|---|---|---|
 | K1 | ~~Identification is the demo mock~~ | Resolved in Sprint 7: real on-device model | — |
 | K2 | Kotlin compiler pinned at 2.2.10, so several libraries are pinned too: Coil 3.3.0, kotlinx-serialization-json 1.9.0, Compose BOM 2026.02.01. KSP must be 2.3.x | Missing newer library fixes; lint warns | Team decision on a Kotlin upgrade (would lift all pins) |
-| K3 | Release build never run on a device; no signing config | Release-only issues (e.g. R8 rules) are undetected | Sprint 8: create a signing key (never committed), test the release build |
+| K3 | ~~Release build never run on a device; no signing config~~ | Resolved in Sprint 8: signed release installed and checked on a phone (§7) | — |
 | K4 | Landscape and tablets not optimised (not required for v1) | Works and scrolls, but photos are large in landscape | Only if the team needs it |
 | K5 | The Demo mode picker choice resets to *Plant identified* after process death | Demo only; results already shown are preserved (F2) | Goes away with the real model |
 | K6 | A full device storage during photo import shows "Can't open this photo" | Misleading message in a rare case | Optional: distinguish storage errors |
@@ -104,7 +104,7 @@ Date: 2026-11-23 · Branch: `feature/release-evaluation`
 | Release signing | Checked with a throwaway key (deleted afterwards): `assembleRelease` and `bundleRelease` produce an APK and an `.aab` signed with it; without `keystore.properties` the release builds unsigned |
 | Lint | 0 errors; 8 warnings, all version notices |
 | Device tests | Compile (incl. new `CsvResultsExporterTest`). Not run in this session |
-| Release APK on a phone | **Not done yet:** needs the team's real key (`RELEASE.md`) |
+| Release APK on a phone | **Done 2026-11-24:** signed with the team's key, installed over USB on a team phone (model 2412DPC0AG); the `MANUAL_TESTS.md` Sprint 8 checks were reported all OK by the tester |
 
 ### Measuring inference time (Q18, D47)
 

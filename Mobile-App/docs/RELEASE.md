@@ -9,18 +9,25 @@ The key identifies the app. Keep it safe: if it's lost, installed copies can't b
 updated with a new build. **Never commit the key or its passwords.** `*.jks`,
 `*.keystore` and `keystore.properties` are git-ignored.
 
-From `Mobile-App/`:
+From `Mobile-App/`, as **one line** (Windows PowerShell and cmd don't accept the
+`\` line breaks some guides use):
 
-```bash
-keytool -genkeypair -v -keystore plantid-release.jks -alias plantid \
-  -keyalg RSA -keysize 2048 -validity 10000
+```powershell
+keytool -genkeypair -v -keystore plantid-release.jks -alias plantid -keyalg RSA -keysize 2048 -validity 10000
 ```
 
-`keytool` comes with the JDK (Android Studio's is in `<Android Studio>/jbr/bin`).
-Choose strong passwords when asked, and keep a backup of the `.jks` file and the
-passwords somewhere private (not in the repository).
+- `keytool` comes with the JDK (Android Studio's is in `<Android Studio>\jbr\bin`).
+- It asks for a keystore password twice: choose a strong one and write it down.
+- The name and organisation questions go into the certificate. Use the project
+  name, or press Enter to skip, then type `yes`.
+- Newer Java versions don't ask for a separate key password: use the same
+  password for both in `keystore.properties`.
 
-Then create `Mobile-App/keystore.properties`:
+Keep a backup of the `.jks` file and the password somewhere private (a password
+manager or private drive, **not** the repository). Only whoever builds releases
+needs it.
+
+Then create `Mobile-App/keystore.properties` (for example `notepad keystore.properties`):
 
 ```properties
 storeFile=plantid-release.jks
@@ -30,11 +37,12 @@ keyPassword=<the key password>
 ```
 
 `storeFile` is relative to `Mobile-App/`. Without this file, release builds still
-work but are **unsigned** (they can't be installed).
+work but are **unsigned** (they can't be installed). Check with `git status` that
+neither file appears: both are git-ignored.
 
 ## 2. Build
 
-From `Mobile-App/` (`gradlew.bat` on Windows):
+From `Mobile-App/` (in PowerShell write `.\gradlew.bat` instead of `./gradlew`):
 
 ```bash
 ./gradlew testDebugUnitTest          # must pass first
@@ -56,12 +64,24 @@ if you like) in `app/build.gradle.kts`, so phones accept it as an update.
 
 ## 3. Install
 
-- Over USB: `adb install -r app/build/outputs/apk/release/app-release.apk`
-- Or send the APK file. Testers allow "Install unknown apps" for the app they
-  open it with (for example Files or Drive) when Android asks.
-
 A release build can't be installed over a debug build. Uninstall the debug app
 first (this also removes its saved history).
+
+**Over USB** (phone with USB debugging on). Android Studio installs `adb` but
+doesn't put it on the PATH; in PowerShell, from `Mobile-App/`:
+
+```powershell
+$env:Path += ";$env:LOCALAPPDATA\Android\Sdk\platform-tools"   # this window only
+adb uninstall io.github.ephym6.plantid                           # removes the debug build
+adb install -r app\build\outputs\apk\release\app-release.apk
+```
+
+- `INSTALL_FAILED_USER_RESTRICTED` on Xiaomi/HyperOS phones: turn on
+  *Developer options → Install via USB* and try again.
+- `INSTALL_FAILED_UPDATE_INCOMPATIBLE`: the debug build is still installed.
+
+**Or send the APK file.** Testers allow "Install unknown apps" for the app they
+open it with (for example Files or Drive) when Android asks.
 
 ## 4. Check before handing it out
 
